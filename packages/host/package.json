@@ -1,0 +1,26 @@
+{
+  "name": "@vagus/host",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vagus local and self-hosted Agent Host",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "bundle:desktop": "node scripts/bundle-desktop.mjs",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "smoke:pi": "node dist/smoke-pi.js"
+  },
+  "dependencies": {
+    "@agentclientprotocol/claude-agent-acp": "^0.88.0",
+    "@agentclientprotocol/sdk": "^1.7.0",
+    "@vagus/agent-core": "0.1.0",
+    "@vagus/protocol": "0.1.0",
+    "cross-spawn": "7.0.6",
+    "diff": "^9.0.0",
+    "undici": "^7.30.0",
+    "ws": "8.22.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

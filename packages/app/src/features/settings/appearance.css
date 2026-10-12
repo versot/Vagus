@@ -1,0 +1,862 @@
+/* Opaque tinted chrome keeps the colored rim without showing other windows through the app. */
+:root[data-window-glass="true"] {
+  --window-chrome-start: #292a2e;
+  --window-chrome-end: #232428;
+  --window-rim-start: #555d69;
+  --window-rim-end: #34363c;
+  background: var(--surface);
+}
+:root[data-window-glass="true"][data-theme="light"] {
+  --window-chrome-start: #f1f3f6;
+  --window-chrome-end: #e9edf2;
+  --window-rim-start: #c5ced9;
+  --window-rim-end: #e0e5eb;
+}
+:root[data-window-glass="true"] body,
+:root[data-window-glass="true"] .app-shell,
+:root[data-window-glass="true"] .app-frame { background: var(--surface); }
+:root[data-window-glass="true"] .app-shell { position: relative; border-radius: 8px; }
+:root[data-window-glass="true"] .app-shell::after {
+  content: ""; position: absolute; z-index: 1100; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(180deg, var(--window-rim-start), var(--window-rim-end)) left top / 1px 100% no-repeat,
+    linear-gradient(110deg, var(--window-rim-start), var(--window-rim-end)) left top / 100% 1px no-repeat;
+}
+:root[data-window-glass="true"] .app-shell:is(.is-maximized, .is-fullscreen) { border-radius: 0; }
+:root[data-window-glass="true"] .app-shell:is(.is-maximized, .is-fullscreen)::after { display: none; }
+:root[data-window-glass="true"] :is(.titlebar, .rail) { background: linear-gradient(125deg, var(--window-chrome-start), var(--window-chrome-end)); }
+:root[data-window-glass="true"] .resize-handle { background: var(--surface); }
+:root[data-window-glass="true"] .resize-handle:hover { background: var(--input); }
+
+/* Shared neutral palette: the dark values retain the existing Vagus appearance. */
+:root {
+  --tone-050608: #050608;
+  --tone-050608-rgb: 5, 6, 8;
+  --tone-0a0a0a: #0a0a0a;
+  --tone-0a0a0c: #0a0a0c;
+  --tone-0d0e10: #0d0e10;
+  --tone-0d0e10-rgb: 13, 14, 16;
+  --tone-0f1012: #0f1012;
+  --tone-0f1012-rgb: 15, 16, 18;
+  --tone-111113: #111113;
+  --tone-111215: #111215;
+  --tone-111215-rgb: 17, 18, 21;
+  --tone-121315: #121315;
+  --tone-131416: #131416;
+  --tone-151515: #151515;
+  --tone-161616: #161616;
+  --tone-18191c: #18191c;
+  --tone-18191c-rgb: 24, 25, 28;
+  --tone-19191d: #19191d;
+  --tone-1a1b1d: #1a1b1d;
+  --tone-1c1c1c: #1c1c1c;
+  --tone-1d1e21: #1d1e21;
+  --tone-1e1f22: #1e1f22;
+  --tone-202123: #202123;
+  --tone-202124: #202124;
+  --tone-222225: #222225;
+  --tone-222326: #222326;
+  --tone-232427: #232427;
+  --tone-232427-rgb: 35, 36, 39;
+  --tone-232428: #232428;
+  --tone-232428-rgb: 35, 36, 40;
+  --tone-242426: #242426;
+  --tone-242428: #242428;
+  --tone-242429: #242429;
+  --tone-242528: #242528;
+  --tone-252427: #252427;
+  --tone-252428: #252428;
+  --tone-252428-rgb: 37, 36, 40;
+  --tone-252529: #252529;
+  --tone-252629: #252629;
+  --tone-25262a: #25262a;
+  --tone-25262b: #25262b;
+  --tone-25262c: #25262c;
+  --tone-25272b: #25272b;
+  --tone-272729: #272729;
+  --tone-272729-rgb: 39, 39, 41;
+  --tone-29292e: #29292e;
+  --tone-292a2d: #292a2d;
+  --tone-2a292d: #2a292d;
+  --tone-2a2b2d: #2a2b2d;
+  --tone-2a2b2d-rgb: 42, 43, 45;
+  --tone-2a2b2e: #2a2b2e;
+  --tone-2b2a2d: #2b2a2d;
+  --tone-2b2a2e: #2b2a2e;
+  --tone-2b2a2e-rgb: 43, 42, 46;
+  --tone-2b2c2f: #2b2c2f;
+  --tone-2b2c30: #2b2c30;
+  --tone-2b2d32: #2b2d32;
+  --tone-2c2d31: #2c2d31;
+  --tone-2d2e31: #2d2e31;
+  --tone-302f33: #302f33;
+  --tone-303033: #303033;
+  --tone-303036: #303036;
+  --tone-303134: #303134;
+  --tone-303135: #303135;
+  --tone-303139: #303139;
+  --tone-333437: #333437;
+  --tone-33343a: #33343a;
+  --tone-343437: #343437;
+  --tone-34343a: #34343a;
+  --tone-34343b: #34343b;
+  --tone-343538: #343538;
+  --tone-353639: #353639;
+  --tone-363639: #363639;
+  --tone-36373a: #36373a;
+  --tone-36373d: #36373d;
+  --tone-3a393d: #3a393d;
+  --tone-3a3b3f: #3a3b3f;
+  --tone-3a3b42: #3a3b42;
+  --tone-3c3c43: #3c3c43;
+  --tone-3c3d40: #3c3d40;
+  --tone-404044: #404044;
+  --tone-414246: #414246;
+  --tone-414247: #414247;
+  --tone-444548: #444548;
+  --tone-444549: #444549;
+  --tone-45464a: #45464a;
+  --tone-45464b: #45464b;
+  --tone-48494f: #48494f;
+  --tone-4a4b4e: #4a4b4e;
+  --tone-4c5361: #4c5361;
+  --tone-515156: #515156;
+  --tone-535458: #535458;
+  --tone-55565a: #55565a;
+  --tone-58585f: #58585f;
+  --tone-5b5c61: #5b5c61;
+  --tone-626975: #626975;
+  --tone-63656b: #63656b;
+  --tone-64666d: #64666d;
+  --tone-65676d: #65676d;
+  --tone-66686d: #66686d;
+  --tone-707279: #707279;
+  --tone-737b8a: #737b8a;
+  --tone-77787e: #77787e;
+  --tone-77797e: #77797e;
+  --tone-77797f: #77797f;
+  --tone-777980: #777980;
+  --tone-78927f: #78927f;
+  --tone-78927f-rgb: 120, 146, 127;
+  --tone-818287: #818287;
+  --tone-85868b: #85868b;
+  --tone-85868c: #85868c;
+  --tone-85868d: #85868d;
+  --tone-85868f: #85868f;
+  --tone-85878c: #85878c;
+  --tone-85878d: #85878d;
+  --tone-858791: #858791;
+  --tone-88898e: #88898e;
+  --tone-888a8f: #888a8f;
+  --tone-888a90: #888a90;
+  --tone-888b95: #888b95;
+  --tone-898a90: #898a90;
+  --tone-898b90: #898b90;
+  --tone-898b91: #898b91;
+  --tone-898c94: #898c94;
+  --tone-8a8b90: #8a8b90;
+  --tone-8c8e93: #8c8e93;
+  --tone-8d8e93: #8d8e93;
+  --tone-8d8e94: #8d8e94;
+  --tone-8d9b8f: #8d9b8f;
+  --tone-8d9b8f-rgb: 141, 155, 143;
+  --tone-8f9095: #8f9095;
+  --tone-8f9197: #8f9197;
+  --tone-909196: #909196;
+  --tone-909198: #909198;
+  --tone-919398: #919398;
+  --tone-929398: #929398;
+  --tone-929399: #929399;
+  --tone-92939b: #92939b;
+  --tone-92949a: #92949a;
+  --tone-92949c: #92949c;
+  --tone-92949d: #92949d;
+  --tone-94959a: #94959a;
+  --tone-94969c: #94969c;
+  --tone-94969d: #94969d;
+  --tone-96979c: #96979c;
+  --tone-96989d: #96989d;
+  --tone-96989e: #96989e;
+  --tone-96989f: #96989f;
+  --tone-999aa0: #999aa0;
+  --tone-999ba0: #999ba0;
+  --tone-999ba1: #999ba1;
+  --tone-999ba4: #999ba4;
+  --tone-9a9ba0: #9a9ba0;
+  --tone-9b9ca2: #9b9ca2;
+  --tone-9b9ca4: #9b9ca4;
+  --tone-9b9da2: #9b9da2;
+  --tone-9b9da4: #9b9da4;
+  --tone-9b9da5: #9b9da5;
+  --tone-9c9da2: #9c9da2;
+  --tone-9cb2a1: #9cb2a1;
+  --tone-a0a1a6: #a0a1a6;
+  --tone-a1a1aa: #a1a1aa;
+  --tone-a1a2a7: #a1a2a7;
+  --tone-a1a3a8: #a1a3a8;
+  --tone-a2a4aa: #a2a4aa;
+  --tone-a4a5aa: #a4a5aa;
+  --tone-a4a6ab: #a4a6ab;
+  --tone-a5a6ad: #a5a6ad;
+  --tone-a5a7ad: #a5a7ad;
+  --tone-a6a7ab: #a6a7ab;
+  --tone-a6a7ac: #a6a7ac;
+  --tone-a6a8ae: #a6a8ae;
+  --tone-a7a8ad: #a7a8ad;
+  --tone-a7a8b0: #a7a8b0;
+  --tone-a8a9ad: #a8a9ad;
+  --tone-a8a9ae: #a8a9ae;
+  --tone-a8b6a9: #a8b6a9;
+  --tone-a9a092: #a9a092;
+  --tone-a9abb1: #a9abb1;
+  --tone-a9c4ad: #a9c4ad;
+  --tone-aaaeb5: #aaaeb5;
+  --tone-acadb1: #acadb1;
+  --tone-adaeb2: #adaeb2;
+  --tone-adb0b8: #adb0b8;
+  --tone-aeb0b4: #aeb0b4;
+  --tone-aeb0b5: #aeb0b5;
+  --tone-aeb0b7: #aeb0b7;
+  --tone-afb0b5: #afb0b5;
+  --tone-b3b4b8: #b3b4b8;
+  --tone-b4b4bb: #b4b4bb;
+  --tone-b4b5b9: #b4b5b9;
+  --tone-b5b6ba: #b5b6ba;
+  --tone-b5b6bb: #b5b6bb;
+  --tone-b5b7bd: #b5b7bd;
+  --tone-b6b7bb: #b6b7bb;
+  --tone-b6bac3: #b6bac3;
+  --tone-b6c9ba: #b6c9ba;
+  --tone-b7bbc4: #b7bbc4;
+  --tone-b8bac0: #b8bac0;
+  --tone-b8bac1: #b8bac1;
+  --tone-b9babd: #b9babd;
+  --tone-b9babe: #b9babe;
+  --tone-b9bbc0: #b9bbc0;
+  --tone-b9bbc2: #b9bbc2;
+  --tone-bfc0c4: #bfc0c4;
+  --tone-c3c4c8: #c3c4c8;
+  --tone-c3c4c9: #c3c4c9;
+  --tone-c4c5c9: #c4c5c9;
+  --tone-c4c6cb: #c4c6cb;
+  --tone-c5c6ca: #c5c6ca;
+  --tone-c7c8cc: #c7c8cc;
+  --tone-c7c8ce: #c7c8ce;
+  --tone-c9cace: #c9cace;
+  --tone-c9cacf: #c9cacf;
+  --tone-cdcfd4: #cdcfd4;
+  --tone-cdcfd4-rgb: 205, 207, 212;
+  --tone-d0d1d4: #d0d1d4;
+  --tone-d1d2d4: #d1d2d4;
+  --tone-d1d2d7: #d1d2d7;
+  --tone-d2d3d6: #d2d3d6;
+  --tone-d3d4d8: #d3d4d8;
+  --tone-d4d4d8: #d4d4d8;
+  --tone-d4d5d8: #d4d5d8;
+  --tone-d4d5d9: #d4d5d9;
+  --tone-d4d5da: #d4d5da;
+  --tone-d5d6d9: #d5d6d9;
+  --tone-d5d6da: #d5d6da;
+  --tone-d6d6d8: #d6d6d8;
+  --tone-d6d7da: #d6d7da;
+  --tone-d8d9db: #d8d9db;
+  --tone-d8d9dc: #d8d9dc;
+  --tone-d9dadd: #d9dadd;
+  --tone-d9dae0: #d9dae0;
+  --tone-d9e1f2: #d9e1f2;
+  --tone-dbdcdf: #dbdcdf;
+  --tone-dbdce0: #dbdce0;
+  --tone-dcdddf: #dcdddf;
+  --tone-dddddf: #dddddf;
+  --tone-dedee0: #dedee0;
+  --tone-dedee1: #dedee1;
+  --tone-dedee2: #dedee2;
+  --tone-dedfe1: #dedfe1;
+  --tone-dedfe2: #dedfe2;
+  --tone-e0e0e2: #e0e0e2;
+  --tone-e0e1e3: #e0e1e3;
+  --tone-e1e1e3: #e1e1e3;
+  --tone-e1e3e8: #e1e3e8;
+  --tone-e2e2e4: #e2e2e4;
+  --tone-e2e3e5: #e2e3e5;
+  --tone-e2e3e6: #e2e3e6;
+  --tone-e2e3e7: #e2e3e7;
+  --tone-e3e3e5: #e3e3e5;
+  --tone-e3e3e6: #e3e3e6;
+  --tone-e3e4e6: #e3e4e6;
+  --tone-e3e8f0: #e3e8f0;
+  --tone-e4e5e6: #e4e5e6;
+  --tone-e4e5e7: #e4e5e7;
+  --tone-e4e5e8: #e4e5e8;
+  --tone-e5e5e6: #e5e5e6;
+  --tone-e5e5e7: #e5e5e7;
+  --tone-e5e5e8: #e5e5e8;
+  --tone-e6e6e8: #e6e6e8;
+  --tone-e6edf5: #e6edf5;
+  --tone-e6edf5-rgb: 230, 237, 245;
+  --tone-e7e7e8: #e7e7e8;
+  --tone-e7e7e9: #e7e7e9;
+  --tone-e8e8e9: #e8e8e9;
+  --tone-e8e8ea: #e8e8ea;
+  --tone-e8e9ed: #e8e9ed;
+  --tone-e9e9eb: #e9e9eb;
+  --tone-ebebee: #ebebee;
+  --tone-ebebee-rgb: 235, 235, 238;
+  --tone-ececee: #ececee;
+  --tone-ededee: #ededee;
+  --tone-eeeeee: #eeeeee;
+  --tone-eeeeef: #eeeeef;
+  --tone-f0f0f1: #f0f0f1;
+  --tone-f0f0f2: #f0f0f2;
+  --tone-f0f1f2: #f0f1f2;
+  --tone-f0f1f4: #f0f1f4;
+  --tone-f1f1f2: #f1f1f2;
+  --tone-f1f1f3: #f1f1f3;
+  --tone-f2f2f3: #f2f2f3;
+  --tone-f3f3f4: #f3f3f4;
+  --tone-f4f4f5: #f4f4f5;
+  --tone-fafafa: #fafafa;
+  --tone-ffffff: #ffffff;
+  --tone-ffffff-rgb: 255, 255, 255;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  /* Paper canvas, mist navigation, white floating surfaces, graphite actions. */
+  --surface: #fcfcfd;
+  --sidebar: #f5f6f8;
+  --rail: #eef0f3;
+  --raised: #ffffff;
+  --input: #f8f9fb;
+  --text: #252a32;
+  --muted: #606b7a;
+  --subtle: #717c8b;
+  --stroke: #e5e8ee;
+  --stroke-strong: #d5dbe4;
+  --hover-surface: #f3f5f8;
+  --hover-surface-strong: #ffffff;
+  --hover-control: rgba(37, 42, 50, .045);
+  --selected-surface: #e9edf2;
+  --selected-hover: #e2e7ee;
+  --focus-ring: #677586;
+  --blue: #394757;
+  --blue-bright: #283544;
+  --danger: #b53e4d;
+  --success: #267451;
+  --warning: #8c621d;
+  --shadow-card: 0 2px 8px rgba(31, 44, 61, .035);
+  --shadow-popover: 0 12px 32px rgba(31, 44, 61, .10), 0 2px 6px rgba(31, 44, 61, .035);
+  --shadow-dialog: 0 24px 72px rgba(31, 44, 61, .16), 0 4px 16px rgba(31, 44, 61, .04);
+  /* Legacy component tones map to the same semantic palette. */
+  --tone-050608: var(--surface);
+  --tone-050608-rgb: 252, 252, 253;
+  --tone-0a0a0a: var(--surface);
+  --tone-0a0a0c: var(--surface);
+  --tone-0d0e10: var(--surface);
+  --tone-0d0e10-rgb: 252, 252, 253;
+  --tone-0f1012: var(--surface);
+  --tone-0f1012-rgb: 252, 252, 253;
+  --tone-111113: var(--surface);
+  --tone-111215: var(--surface);
+  --tone-111215-rgb: 252, 252, 253;
+  --tone-121315: var(--surface);
+  --tone-131416: var(--sidebar);
+  --tone-151515: var(--sidebar);
+  --tone-161616: var(--sidebar);
+  --tone-18191c: var(--sidebar);
+  --tone-18191c-rgb: 245, 246, 248;
+  --tone-19191d: var(--sidebar);
+  --tone-1a1b1d: var(--sidebar);
+  --tone-1c1c1c: var(--sidebar);
+  --tone-1d1e21: var(--raised);
+  --tone-1e1f22: var(--raised);
+  --tone-202123: var(--raised);
+  --tone-202124: var(--raised);
+  --tone-222225: var(--raised);
+  --tone-222326: var(--raised);
+  --tone-232427: var(--raised);
+  --tone-232427-rgb: 255, 255, 255;
+  --tone-232428: var(--raised);
+  --tone-232428-rgb: 255, 255, 255;
+  --tone-242426: var(--raised);
+  --tone-242428: var(--raised);
+  --tone-242429: var(--raised);
+  --tone-242528: var(--raised);
+  --tone-252427: var(--raised);
+  --tone-252428: var(--raised);
+  --tone-252428-rgb: 255, 255, 255;
+  --tone-252529: var(--raised);
+  --tone-252629: var(--raised);
+  --tone-25262a: var(--raised);
+  --tone-25262b: var(--raised);
+  --tone-25262c: var(--raised);
+  --tone-25272b: var(--raised);
+  --tone-272729: var(--raised);
+  --tone-272729-rgb: 255, 255, 255;
+  --tone-29292e: var(--input);
+  --tone-292a2d: var(--input);
+  --tone-2a292d: var(--input);
+  --tone-2a2b2d: var(--input);
+  --tone-2a2b2d-rgb: 248, 249, 251;
+  --tone-2a2b2e: var(--input);
+  --tone-2b2a2d: var(--input);
+  --tone-2b2a2e: var(--input);
+  --tone-2b2a2e-rgb: 248, 249, 251;
+  --tone-2b2c2f: var(--input);
+  --tone-2b2c30: var(--input);
+  --tone-2b2d32: var(--input);
+  --tone-2c2d31: var(--input);
+  --tone-2d2e31: var(--input);
+  --tone-302f33: var(--input);
+  --tone-303033: var(--input);
+  --tone-303036: var(--input);
+  --tone-303134: var(--input);
+  --tone-303135: var(--input);
+  --tone-303139: var(--input);
+  --tone-333437: var(--selected-surface);
+  --tone-33343a: var(--selected-surface);
+  --tone-343437: var(--selected-surface);
+  --tone-34343a: var(--selected-surface);
+  --tone-34343b: var(--selected-surface);
+  --tone-343538: var(--selected-surface);
+  --tone-353639: var(--selected-surface);
+  --tone-363639: var(--selected-surface);
+  --tone-36373a: var(--selected-surface);
+  --tone-36373d: var(--selected-surface);
+  --tone-3a393d: var(--selected-surface);
+  --tone-3a3b3f: var(--selected-surface);
+  --tone-3a3b42: var(--selected-surface);
+  --tone-3c3c43: var(--selected-surface);
+  --tone-3c3d40: var(--selected-surface);
+  --tone-404044: var(--selected-surface);
+  --tone-414246: var(--selected-surface);
+  --tone-414247: var(--selected-surface);
+  --tone-444548: #c5cdd7;
+  --tone-444549: #c5cdd7;
+  --tone-45464a: #c5cdd7;
+  --tone-45464b: #c5cdd7;
+  --tone-48494f: #c5cdd7;
+  --tone-4a4b4e: #c5cdd7;
+  --tone-4c5361: #c5cdd7;
+  --tone-515156: #c5cdd7;
+  --tone-535458: #c5cdd7;
+  --tone-55565a: #c5cdd7;
+  --tone-58585f: #c5cdd7;
+  --tone-5b5c61: #c5cdd7;
+  --tone-626975: var(--subtle);
+  --tone-63656b: var(--subtle);
+  --tone-64666d: var(--subtle);
+  --tone-65676d: var(--subtle);
+  --tone-66686d: var(--subtle);
+  --tone-707279: var(--subtle);
+  --tone-737b8a: var(--subtle);
+  --tone-77787e: var(--subtle);
+  --tone-77797e: var(--subtle);
+  --tone-77797f: var(--subtle);
+  --tone-777980: var(--subtle);
+  --tone-78927f: var(--success);
+  --tone-78927f-rgb: 38, 116, 81;
+  --tone-818287: var(--muted);
+  --tone-85868b: var(--muted);
+  --tone-85868c: var(--muted);
+  --tone-85868d: var(--muted);
+  --tone-85868f: var(--muted);
+  --tone-85878c: var(--muted);
+  --tone-85878d: var(--muted);
+  --tone-858791: var(--muted);
+  --tone-88898e: var(--muted);
+  --tone-888a8f: var(--muted);
+  --tone-888a90: var(--muted);
+  --tone-888b95: var(--muted);
+  --tone-898a90: var(--muted);
+  --tone-898b90: var(--muted);
+  --tone-898b91: var(--muted);
+  --tone-898c94: var(--muted);
+  --tone-8a8b90: var(--muted);
+  --tone-8c8e93: var(--muted);
+  --tone-8d8e93: var(--muted);
+  --tone-8d8e94: var(--muted);
+  --tone-8d9b8f: var(--success);
+  --tone-8d9b8f-rgb: 38, 116, 81;
+  --tone-8f9095: var(--muted);
+  --tone-8f9197: var(--muted);
+  --tone-909196: var(--muted);
+  --tone-909198: var(--muted);
+  --tone-919398: var(--muted);
+  --tone-929398: var(--muted);
+  --tone-929399: var(--muted);
+  --tone-92939b: var(--muted);
+  --tone-92949a: var(--muted);
+  --tone-92949c: var(--muted);
+  --tone-92949d: var(--muted);
+  --tone-94959a: var(--muted);
+  --tone-94969c: var(--muted);
+  --tone-94969d: var(--muted);
+  --tone-96979c: var(--muted);
+  --tone-96989d: var(--muted);
+  --tone-96989e: var(--muted);
+  --tone-96989f: var(--muted);
+  --tone-999aa0: var(--muted);
+  --tone-999ba0: var(--muted);
+  --tone-999ba1: var(--muted);
+  --tone-999ba4: var(--muted);
+  --tone-9a9ba0: var(--muted);
+  --tone-9b9ca2: var(--muted);
+  --tone-9b9ca4: var(--muted);
+  --tone-9b9da2: var(--muted);
+  --tone-9b9da4: var(--muted);
+  --tone-9b9da5: var(--muted);
+  --tone-9c9da2: var(--muted);
+  --tone-9cb2a1: var(--success);
+  --tone-a0a1a6: #566171;
+  --tone-a1a1aa: #566171;
+  --tone-a1a2a7: #566171;
+  --tone-a1a3a8: #566171;
+  --tone-a2a4aa: #566171;
+  --tone-a4a5aa: #566171;
+  --tone-a4a6ab: #566171;
+  --tone-a5a6ad: #566171;
+  --tone-a5a7ad: #566171;
+  --tone-a6a7ab: #566171;
+  --tone-a6a7ac: #566171;
+  --tone-a6a8ae: #566171;
+  --tone-a7a8ad: #566171;
+  --tone-a7a8b0: #566171;
+  --tone-a8a9ad: #566171;
+  --tone-a8a9ae: #566171;
+  --tone-a8b6a9: var(--success);
+  --tone-a9a092: var(--warning);
+  --tone-a9abb1: #566171;
+  --tone-a9c4ad: var(--success);
+  --tone-aaaeb5: #566171;
+  --tone-acadb1: #566171;
+  --tone-adaeb2: #566171;
+  --tone-adb0b8: #566171;
+  --tone-aeb0b4: #566171;
+  --tone-aeb0b5: #566171;
+  --tone-aeb0b7: #566171;
+  --tone-afb0b5: #566171;
+  --tone-b3b4b8: #465160;
+  --tone-b4b4bb: #465160;
+  --tone-b4b5b9: #465160;
+  --tone-b5b6ba: #465160;
+  --tone-b5b6bb: #465160;
+  --tone-b5b7bd: #465160;
+  --tone-b6b7bb: #465160;
+  --tone-b6bac3: #465160;
+  --tone-b6c9ba: var(--success);
+  --tone-b7bbc4: #465160;
+  --tone-b8bac0: #465160;
+  --tone-b8bac1: #465160;
+  --tone-b9babd: #465160;
+  --tone-b9babe: #465160;
+  --tone-b9bbc0: #465160;
+  --tone-b9bbc2: #465160;
+  --tone-bfc0c4: #465160;
+  --tone-c3c4c8: #465160;
+  --tone-c3c4c9: #465160;
+  --tone-c4c5c9: #465160;
+  --tone-c4c6cb: #465160;
+  --tone-c5c6ca: #465160;
+  --tone-c7c8cc: #465160;
+  --tone-c7c8ce: #465160;
+  --tone-c9cace: #465160;
+  --tone-c9cacf: #465160;
+  --tone-cdcfd4: #465160;
+  --tone-cdcfd4-rgb: 70, 81, 96;
+  --tone-d0d1d4: #465160;
+  --tone-d1d2d4: var(--text);
+  --tone-d1d2d7: var(--text);
+  --tone-d2d3d6: var(--text);
+  --tone-d3d4d8: var(--text);
+  --tone-d4d4d8: var(--text);
+  --tone-d4d5d8: var(--text);
+  --tone-d4d5d9: var(--text);
+  --tone-d4d5da: var(--text);
+  --tone-d5d6d9: var(--text);
+  --tone-d5d6da: var(--text);
+  --tone-d6d6d8: var(--text);
+  --tone-d6d7da: var(--text);
+  --tone-d8d9db: var(--text);
+  --tone-d8d9dc: var(--text);
+  --tone-d9dadd: var(--text);
+  --tone-d9dae0: var(--text);
+  --tone-d9e1f2: var(--text);
+  --tone-dbdcdf: var(--text);
+  --tone-dbdce0: var(--text);
+  --tone-dcdddf: var(--text);
+  --tone-dddddf: var(--text);
+  --tone-dedee0: var(--text);
+  --tone-dedee1: var(--text);
+  --tone-dedee2: var(--text);
+  --tone-dedfe1: var(--text);
+  --tone-dedfe2: var(--text);
+  --tone-e0e0e2: var(--text);
+  --tone-e0e1e3: var(--text);
+  --tone-e1e1e3: var(--text);
+  --tone-e1e3e8: var(--text);
+  --tone-e2e2e4: var(--text);
+  --tone-e2e3e5: var(--text);
+  --tone-e2e3e6: var(--text);
+  --tone-e2e3e7: var(--text);
+  --tone-e3e3e5: var(--text);
+  --tone-e3e3e6: var(--text);
+  --tone-e3e4e6: var(--text);
+  --tone-e3e8f0: var(--text);
+  --tone-e4e5e6: var(--text);
+  --tone-e4e5e7: var(--text);
+  --tone-e4e5e8: var(--text);
+  --tone-e5e5e6: var(--text);
+  --tone-e5e5e7: var(--text);
+  --tone-e5e5e8: var(--text);
+  --tone-e6e6e8: var(--text);
+  --tone-e6edf5: var(--text);
+  --tone-e6edf5-rgb: 37, 42, 50;
+  --tone-e7e7e8: var(--text);
+  --tone-e7e7e9: var(--text);
+  --tone-e8e8e9: var(--text);
+  --tone-e8e8ea: var(--text);
+  --tone-e8e9ed: var(--text);
+  --tone-e9e9eb: var(--text);
+  --tone-ebebee: #1f2630;
+  --tone-ebebee-rgb: 31, 38, 48;
+  --tone-ececee: #1f2630;
+  --tone-ededee: #1f2630;
+  --tone-eeeeee: #1f2630;
+  --tone-eeeeef: #1f2630;
+  --tone-f0f0f1: #1f2630;
+  --tone-f0f0f2: #1f2630;
+  --tone-f0f1f2: #1f2630;
+  --tone-f0f1f4: #1f2630;
+  --tone-f1f1f2: #1f2630;
+  --tone-f1f1f3: #1f2630;
+  --tone-f2f2f3: #1f2630;
+  --tone-f3f3f4: #1f2630;
+  --tone-f4f4f5: #1f2630;
+  --tone-fafafa: #1f2630;
+  --tone-ffffff: #1f2630;
+  --tone-ffffff-rgb: 31, 38, 48;
+}
+:root[data-theme="dark"] { color-scheme: dark; }
+
+/* Keep controls on colored backgrounds and switch handles legible in both themes. */
+.rail-button.update-button, .rail-avatar, .send-button.is-ready,
+.window-control.close:hover { color: #fff; }
+.general-setting-toggle > span, .provider-enabled-toggle > span { background: #fff; }
+:root[data-theme="light"] .welcome-mark-logo { filter: invert(1); }
+:root[data-theme="light"] .extension-widget-content.is-tui {
+  --extension-ansi-0: #344054;
+  --extension-ansi-1: #b42318;
+  --extension-ansi-2: #067647;
+  --extension-ansi-3: #a15c07;
+  --extension-ansi-4: #175cd3;
+  --extension-ansi-5: #9e2a94;
+  --extension-ansi-6: #087e8b;
+  --extension-ansi-7: #344054;
+  --extension-ansi-8: #667085;
+  --extension-ansi-9: #b42318;
+  --extension-ansi-10: #067647;
+  --extension-ansi-11: #a15c07;
+  --extension-ansi-12: #175cd3;
+  --extension-ansi-13: #9e2a94;
+  --extension-ansi-14: #087e8b;
+  --extension-ansi-15: #1d2939;
+  background: var(--input);
+  color: var(--text);
+  border: 1px solid var(--stroke);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+/* Light theme surfaces share one hierarchy across conversation, workspace and settings. */
+:root[data-theme="light"] :is(.main-pane, .conversation-header, .conversation-switch-mask,
+  .workspace-side-tabs, .workspace-tab-panel, .workspace-tab-picker) {
+  background: var(--surface);
+}
+:root[data-theme="light"] :is(.general-settings-section, .appearance-preview-card, .provider-list-row,
+  .shortcut-table-wrap, .welcome-action, .archive-chat-list) {
+  background: var(--raised);
+  border-color: var(--stroke);
+  box-shadow: var(--shadow-card);
+}
+:root[data-theme="light"] :is(.general-settings-section > header, .shortcut-table th) {
+  background: var(--input);
+  border-color: var(--stroke);
+  color: var(--muted);
+}
+:root[data-theme="light"] :is(.general-setting-row, .appearance-preview-card > header) { border-color: var(--stroke); }
+:root[data-theme="light"] :is(.general-setting-copy > input,
+  .general-path-input-wrap, .appearance-font-control, .shortcut-search, .project-name-field,
+  .session-preferences-menu .session-model-search) {
+  background: var(--input);
+  border-color: var(--stroke-strong);
+  color: var(--text);
+}
+:root[data-theme="light"] :is(.setting-select-trigger, .general-secondary-button, .general-restart-button,
+  .archive-chat-restore, .provider-settings-logo, .archive-project-filter-trigger) {
+  background: var(--raised);
+  border-color: var(--stroke-strong);
+  color: var(--text);
+}
+:root[data-theme="light"] :is(.setting-select-trigger, .general-secondary-button, .general-restart-button,
+  .archive-chat-restore):hover:not(:disabled),
+:root[data-theme="light"] .setting-select.is-open .setting-select-trigger {
+  background: var(--hover-surface);
+  border-color: #b7c1ce;
+}
+:root[data-theme="light"] :is(.general-path-input-wrap, .appearance-font-control, .shortcut-search):focus-within {
+  outline-color: var(--focus-ring);
+  border-color: var(--focus-ring);
+}
+:root[data-theme="light"] .project-name-field { box-shadow: 0 0 0 2px rgba(103,117,134,.10); }
+:root[data-theme="light"] :is(.general-setting-copy > input, .setting-select-trigger, .setting-select-option,
+  .general-path-control input, .general-setting-toggle, .general-secondary-button, .general-save-button,
+  .general-restart-button, .provider-list-row, .provider-dialog-close, .provider-refresh-button,
+  .provider-model-error button, .archive-project-filter-trigger, .archive-project-filter-menu > button,
+  .archive-settings-nav-group > button):focus-visible { outline-color: var(--focus-ring); }
+
+/* Navigation lifts to white on hover; selection stays visibly distinct. */
+:root[data-theme="light"] :is(.project-row, .session-row, .recent-row):hover,
+:root[data-theme="light"] :is(.project-row, .session-row).has-open-menu,
+:root[data-theme="light"] .session-row:focus-within,
+:root[data-theme="light"] .archive-settings-nav-group > button:hover {
+  background: var(--hover-surface-strong);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--stroke), var(--shadow-card);
+}
+:root[data-theme="light"] :is(.session-row, .recent-row, .project-row).is-selected,
+:root[data-theme="light"] .archive-settings-nav-group > button.is-active {
+  background: var(--selected-surface);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--stroke-strong);
+}
+:root[data-theme="light"] :is(.session-row, .recent-row, .project-row).is-selected:hover,
+:root[data-theme="light"] .archive-settings-nav-group > button.is-active:hover {
+  background: var(--selected-hover);
+}
+:root[data-theme="light"] :is(.project-row, .session-row, .recent-row, .archive-settings-nav-group > button) {
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+:root[data-theme="light"] .rail-button.active { background: var(--raised); box-shadow: inset 0 0 0 1px var(--stroke-strong), var(--shadow-card); }
+:root[data-theme="light"] :is(.header-actions button, .conversation-tools button, .project-actions button,
+  .section-tools button, .session-action, .new-chat-button, .workspace-side-tab-add,
+  .workspace-side-actions > button, .workspace-tab-close, .workspace-bar-actions > button,
+  .workspace-panel-header > button, .workspace-hidden-tabs > button, .workspace-view-actions > button, .titlebar-button,
+  .titlebar-menu-button, .rail-button):hover:not(:disabled) {
+  background: var(--hover-control);
+  color: var(--text);
+}
+:root[data-theme="light"] .rail-button.update-button:hover { background: var(--blue-bright); color: #fff; }
+:root[data-theme="light"] .workspace-tab:hover { background: var(--hover-surface); }
+:root[data-theme="light"] .workspace-tab.is-active {
+  background: var(--raised); border-color: var(--stroke-strong); box-shadow: var(--shadow-card);
+}
+:root[data-theme="light"] .workspace-page-choice {
+  background: var(--raised); border-color: var(--stroke-strong); box-shadow: var(--shadow-card);
+}
+:root[data-theme="light"] :is(.workspace-page-choice, .welcome-action, .provider-list-row):hover {
+  background: var(--hover-surface); border-color: #b7c1ce; box-shadow: 0 4px 14px rgba(31,44,61,.06);
+}
+:root[data-theme="light"] .workspace-page-choice-icon { color: var(--muted); }
+
+/* Menus are white, with soft depth instead of the dark theme's black shadows. */
+:root[data-theme="light"] :is(.titlebar-edit-menu, .session-hover-card, .project-hover-card,
+  .project-context-menu, .sidebar-menu, .submenu, .workspace-hidden-tabs-menu, .workspace-picker,
+  .agent-picker-menu, .queue-delivery-menu, .session-preferences-menu, .session-usage-popover,
+  .setting-select-menu, .archive-project-filter-menu, .archive-project-menu,
+  .extension-widgets-reveal, .extension-status-rail .extension-status-popover,
+  .slash-command-menu, .extension-toast, .conversation-query-nav-preview, .conversation-query-canvas-preview, .session-action-tooltip,
+  .toast-notice, .archive-toast, .timeline-latest-button) {
+  background: var(--raised); border-color: var(--stroke-strong); color: var(--text);
+  box-shadow: var(--shadow-popover);
+}
+:root[data-theme="light"] :is(.workspace-hidden-tabs-menu > button, .workspace-picker-list > button,
+  .workspace-picker-actions > button, .setting-select-option, .agent-picker-menu > button,
+  .queue-delivery-menu button):hover,
+:root[data-theme="light"] :is(.workspace-hidden-tabs-menu > button, .setting-select-option):focus-visible {
+  background: var(--hover-surface); color: var(--text);
+}
+:root[data-theme="light"] :is(.setting-select-option, .workspace-picker-list > button,
+  .workspace-picker-actions > button, .agent-picker-menu > button, .queue-delivery-menu button).is-selected {
+  background: var(--selected-surface); color: var(--text);
+}
+:root[data-theme="light"] .setting-select-option.is-selected { font-weight: 600; }
+:root[data-theme="light"] .setting-select-option.is-selected:hover,
+:root[data-theme="light"] .setting-select-option.is-selected:focus-visible { background: var(--selected-hover); }
+:root[data-theme="light"] .setting-select-option > svg { color: var(--muted); }
+:root[data-theme="light"] :is(.search-dialog, .project-dialog, .remove-project-confirm,
+  .provider-model-dialog, .archive-delete-dialog, .shortcut-editor) {
+  background: var(--raised); border-color: var(--stroke-strong); box-shadow: var(--shadow-dialog);
+}
+:root[data-theme="light"] :is(.overlay, .provider-model-overlay, .shortcut-editor-overlay) {
+  background: rgba(31,44,61,.18); backdrop-filter: blur(5px);
+}
+
+/* The composer is a clean white writing surface, with neutral focus feedback. */
+:root[data-theme="light"] :is(.composer, .user-message-editor) {
+  background: var(--raised); border-color: var(--stroke-strong);
+  box-shadow: 0 4px 18px rgba(31,44,61,.055);
+}
+:root[data-theme="light"] .composer-workspace-row { background: var(--input); border-color: var(--stroke-strong); }
+:root[data-theme="light"] .composer:focus-within {
+  border-color: #aab6c4;
+  box-shadow: 0 0 0 2px rgba(103,117,134,.08), 0 4px 18px rgba(31,44,61,.055);
+}
+:root[data-theme="light"] .message.user .message-content { background: #e4f4ff; border-color: #d4e8f5; color: var(--text); }
+:root[data-theme="light"] .message-content a { color: #425d78; text-decoration-color: #aab9c8; }
+:root[data-theme="light"] .message-content a:hover { color: var(--text); text-decoration-color: var(--text); }
+:root[data-theme="light"] .message-content pre:not([data-code-theme]) { background: var(--input); border-color: var(--stroke); }
+:root[data-theme="light"] :is(.primary-button, .general-save-button, .interaction-primary-action) {
+  background: var(--blue); border-color: var(--blue); color: #fff;
+}
+:root[data-theme="light"] :is(.primary-button, .general-save-button, .interaction-primary-action):hover:not(:disabled) {
+  background: var(--blue-bright); border-color: var(--blue-bright);
+}
+:root[data-theme="light"] .session-unread-indicator { background: #677586; }
+:root[data-theme="light"] .conversation-query-nav-item:focus-visible { outline-color: var(--focus-ring); }
+:root[data-theme="light"] .resize-handle:hover { background: rgba(103,117,134,.3); }
+:root[data-theme="light"] .git-review-file-heading:hover { background: var(--hover-surface); }
+:root[data-theme="light"] .git-review-diff-row.is-hunk,
+:root[data-theme="light"] .git-review-diff-row.is-hunk code { background: #edf1f6; color: #52647a; }
+:root[data-theme="light"] .git-review-diff-row.is-added :is(.git-review-line-number, .git-review-line-marker, code) { background: #eaf5ee; }
+:root[data-theme="light"] .git-review-diff-row.is-deleted :is(.git-review-line-number, .git-review-line-marker, code) { background: #fceef0; }
+
+/* Semantic colors stay reserved for state, never for neutral hover. */
+:root[data-theme="light"] :is(.general-setting-toggle, .provider-enabled-toggle) { background: #b8c1cc; }
+:root[data-theme="light"] :is(.general-setting-toggle, .provider-enabled-toggle).is-enabled { background: var(--success); }
+:root[data-theme="light"] :is(.session-working-chip, .session-working-indicator, .general-settings-saved, .terminal-status.is-ready) { color: var(--success); }
+:root[data-theme="light"] .archive-toast.is-success { background: #eaf5ee; border-color: #bedcca; color: var(--success); }
+:root[data-theme="light"] .conversation-notice.is-warning .conversation-notice-mark { color: var(--warning); }
+:root[data-theme="light"] .conversation-notice.is-error { background: #fceef0; border-color: #edcbd2; color: var(--danger); }
+:root[data-theme="light"] .provider-status.is-connected i { background: var(--success); }
+:root[data-theme="light"] :is(.archive-error, .provider-model-error, .general-settings-error, .dialog-error,
+  .terminal-error, .terminal-status.is-error, .conversation-notice.is-error .conversation-notice-mark,
+  .archive-project-menu button, .archive-chat-delete-icon:hover, .archive-delete-confirm, .project-context-menu > button.is-destructive,
+  .project-context-menu > button.is-destructive > svg) { color: var(--danger); }
+:root[data-theme="light"] .project-context-menu > button.is-destructive:hover { background: #fceef0; color: var(--danger); }
+:root[data-theme="light"] :is(.archive-delete-confirm, .send-button.is-stop) { background: #fceef0; color: var(--danger); }
+:root[data-theme="light"] :is(.archive-delete-confirm, .send-button.is-stop):hover:not(:disabled) { background: #f8dfe4; }
+:root[data-theme="light"] :is(.project-dialog > header > button, .remove-project-confirm > header > button, .cancel-button):hover:not(:disabled) { color: var(--text); }
+:root[data-theme="light"]::selection,
+:root[data-theme="light"] ::selection { background: #dce5ee; color: var(--text); }
+/* Extension terminal cells retain their own metrics and ANSI colors. */
+.extension-widget-content.is-tui { font-size: 12px; }
+.appearance-settings-content { padding-bottom: 24px; }
+.general-settings-content > * { flex-shrink: 0; }
+.appearance-font-control { width: 100px; height: 34px; flex: 0 0 auto; display: flex; align-items: center; gap: 4px; padding: 0 9px; border: 1px solid var(--stroke-strong); border-radius: 8px; background: var(--input); color: var(--muted); }
+.appearance-font-control:focus-within { outline: 2px solid var(--blue); outline-offset: 2px; }
+.appearance-font-control input { width: 100%; min-width: 0; padding: 0; border: 0; outline: none; background: transparent; color: var(--text); text-align: right; }
+.appearance-font-control input:focus-visible { outline: none; }
+.appearance-font-control span { font-size: calc(var(--ui-font-size,14px) - 2px); }
+.appearance-previews { margin: 8px 0 20px; }
+.appearance-preview-heading h3 { margin: 0; font-size: var(--ui-font-size,14px); font-weight: 600; }
+.appearance-preview-heading p { margin: 6px 0 14px; color: var(--muted); font-size: calc(var(--ui-font-size,14px) - 2px); line-height: 1.5; }
+.appearance-preview-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; }
+.appearance-preview-card { min-width: 0; overflow: hidden; border: 1px solid var(--stroke-strong); border-radius: 12px; background: var(--sidebar); }
+.appearance-preview-card > header { padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--stroke); }
+.appearance-preview-card header div { display: grid; gap: 4px; }
+.appearance-preview-card strong { font-size: calc(var(--ui-font-size,14px) - 1px); font-weight: 600; }
+.appearance-preview-card small { color: var(--muted); font-size: calc(var(--ui-font-size,14px) - 2px); }
+.appearance-preview-badge { flex: 0 0 auto; padding: 4px 7px; border-radius: 5px; font-size: calc(var(--ui-font-size,14px) - 4px); background: var(--input); color: var(--muted); }
+.appearance-preview-badge.is-current { color: var(--text); background: var(--input); box-shadow: inset 0 0 0 1px var(--stroke-strong); font-weight: 600; }
+.appearance-preview-card pre.code-block[data-code-theme] { margin: 8px; border-radius: 8px; max-height: 260px; max-width: calc(100% - 16px); }
+.appearance-settings-content .general-settings-footer { margin-top: 4px; }
+@media (max-width: 960px) { .appearance-preview-grid { grid-template-columns: minmax(0,1fr); } }

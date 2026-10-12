@@ -1,0 +1,9 @@
+{
+  "app": {
+    "windows": [{
+      "label": "main", "title": "Vagus", "width": 1440, "height": 920,
+      "minWidth": 900, "minHeight": 620, "center": true, "decorations": false,
+      "transparent": false, "backgroundColor": "#101114", "theme": "Dark"
+    }]
+  }
+}

@@ -1,0 +1,12 @@
+[
+  { "id": "open-settings", "label": "打开设置", "description": "打开 Vagus 设置页。", "scope": "app", "binding": "Ctrl+Comma" },
+  { "id": "search-sessions", "label": "搜索会话", "description": "查找工作区中的会话。", "scope": "workspace", "binding": "Ctrl+KeyK" },
+  { "id": "toggle-sidebar", "label": "显示/隐藏侧边栏", "description": "切换工作区侧边栏的显示状态。", "scope": "workspace", "binding": "Ctrl+Shift+KeyS" },
+  { "id": "toggle-right-panel", "label": "显示/隐藏右侧栏", "description": "切换右侧工作区面板的显示状态。", "scope": "workspace", "binding": "Ctrl+Shift+KeyB" },
+  { "id": "new-chat", "label": "新聊天", "description": "开始一段新的聊天。", "scope": "app", "binding": "Ctrl+KeyN" },
+  { "id": "open-folder", "label": "打开文件夹", "description": "选择一个文件夹并将其添加为工作区项目。", "scope": "app", "binding": "Ctrl+KeyO" },
+  { "id": "close-window", "label": "关闭窗口", "description": "关闭当前应用窗口。", "scope": "app", "binding": "Ctrl+KeyW" },
+  { "id": "go-back", "label": "后退", "description": "返回上一个页面或会话。", "scope": "app", "binding": "Alt+ArrowLeft" },
+  { "id": "go-forward", "label": "前进", "description": "前往下一个页面或会话。", "scope": "app", "binding": "Alt+ArrowRight" },
+  { "id": "toggle-fullscreen", "label": "切换全屏", "description": "进入或退出当前窗口的全屏模式。", "scope": "app", "binding": "F11" }
+]

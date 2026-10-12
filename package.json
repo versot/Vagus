@@ -1,0 +1,39 @@
+{
+  "name": "vagus-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "description": "Multi-Agent desktop workspace for local Agent sessions",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build:contracts": "npm run build --workspace=@vagus/protocol && npm run build --workspace=@vagus/agent-core",
+    "typecheck:contracts": "npm run build --workspace=@vagus/protocol && npm run typecheck --workspace=@vagus/agent-core",
+    "build:host": "npm run build:contracts && npm run build --workspace=@vagus/host",
+    "smoke:pi": "npm run build:host && npm run smoke:pi --workspace=@vagus/host",
+    "smoke:codex-plugins": "npm run build:host && node scripts/smoke-codex-plugins.mjs",
+    "profile:workspace": "node scripts/profile-workspace.mjs",
+    "profile:stage-one": "npm run build:host && npm run build:app && node scripts/profile-stage-one.mjs",
+    "profile:stage-three-soak": "npm run build:host && node scripts/profile-stage-three-soak.mjs",
+    "test:stage-one": "npm run build:host && npm run build:client && node --experimental-strip-types --test tests/*.test.mjs",
+    "test:stage-one:native": "npm run build:host && npm run bundle:desktop --workspace=@vagus/host && npm run build:app && node scripts/native-stage-one.mjs",
+    "test:stage-three:native": "npm run build:host && npm run bundle:desktop --workspace=@vagus/host && npm run build:app && node scripts/native-stage-one.mjs .tmp/native-stage-three.json",
+    "build:client": "npm run build --workspace=@vagus/client",
+    "build:app": "npm run build:client && npm run build --workspace=@vagus/app",
+    "build:desktop": "npm run build --workspace=@vagus/desktop",
+    "style:check": "node scripts/check-changed-style.mjs",
+    "dev": "npm run build:host && npm run build:client && npm run bundle:desktop --workspace=@vagus/host && npm run dev --workspace=@vagus/desktop"
+  },
+  "devDependencies": {
+    "@types/cross-spawn": "6.0.6",
+    "@types/node": "24.6.0",
+    "@types/ws": "^8.18.2",
+    "eslint": "^10.12.0",
+    "prettier": "^3.9.10",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.71.1"
+  }
+}

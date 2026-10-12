@@ -1,0 +1,40 @@
+[package]
+name = "vagus-desktop"
+version = "0.1.0"
+description = "Vagus desktop application"
+authors = ["Vagus contributors"]
+edition = "2021"
+rust-version = "1.77.2"
+
+[features]
+devtools = ["tauri/devtools"]
+stage-one-smoke = []
+
+[[example]]
+name = "stage_one_smoke"
+required-features = ["stage-one-smoke"]
+
+[lib]
+name = "vagus_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+base64 = "0.22.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = ["tray-icon", "unstable", "devtools"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-notification = "2"
+image = { version = "0.25", default-features = false, features = ["png"] }
+url = "2"
+portable-pty = "0.9.0"
+getrandom = "0.3.4"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Globalization", "Win32_System_Power", "Win32_System_Com", "Win32_System_Registry", "Win32_System_Threading", "Win32_UI_Shell", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_WindowsAndMessaging"] }
+notify-rust = { version = "4.18.1", default-features = false }
+webview2-com = "0.39.1"
+windows = { version = "0.62.2", features = ["Win32_System_Com"] }

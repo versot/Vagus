@@ -1,0 +1,149 @@
+name: Beta Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'releases/v*.md'
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Detect and validate release note
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      file: ${{ steps.release.outputs.file }}
+      should_build: ${{ steps.release.outputs.should_build }}
+      prerelease: ${{ steps.release.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Detect release note and validate version
+        id: release
+        shell: bash
+        env:
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          mapfile -t notes < <(git diff --diff-filter=ACMR --name-only "$BEFORE" "$SHA" -- 'releases/v*.md')
+          if [[ ${#notes[@]} -ne 1 ]]; then
+            echo "Expected exactly one changed releases/v*.md file; found ${#notes[@]}. Publish one version per merge."
+            exit 1
+          fi
+
+          file="${notes[0]}"
+          filename="${file##*/}"
+          version="${filename#v}"
+          version="${version%.md}"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid release note filename: $file"
+            exit 1
+          fi
+          if [[ ! -s "$file" ]]; then
+            echo "Release note file is empty: $file"
+            exit 1
+          fi
+          node scripts/validate-release-notes.mjs "$file"
+
+          tag="v$version"
+          git fetch --tags origin
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "Release $tag already exists; skipping duplicate publication."
+            should_build=false
+          else
+            node scripts/validate-release-version.mjs "$tag"
+            should_build=true
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          echo "should_build=$should_build" >> "$GITHUB_OUTPUT"
+          if [[ "$version" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: Build ${{ matrix.label }}
+    needs: prepare
+    if: needs.prepare.outputs.should_build == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Windows x64
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundles: nsis
+            artifact: windows-x64
+            bundle-path: packages/desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+          - label: macOS Intel
+            runner: macos-latest
+            target: x86_64-apple-darwin
+            bundles: dmg
+            artifact: macos-x64
+            bundle-path: packages/desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+          - label: macOS Apple silicon
+            runner: macos-latest
+            target: aarch64-apple-darwin
+            bundles: dmg
+            artifact: macos-arm64
+            bundle-path: packages/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - run: npm ci
+      - name: Build desktop installer
+        run: npm run build --workspace=@vagus/desktop -- --target "${{ matrix.target }}" --bundles "${{ matrix.bundles }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vagus-${{ matrix.artifact }}
+          path: ${{ matrix.bundle-path }}
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub Release
+    needs: [prepare, build]
+    if: needs.prepare.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          pattern: vagus-*
+          merge-multiple: true
+      - name: Prepare checksums
+        run: |
+          cd release-assets
+          sha256sum * > SHA256SUMS.txt
+      - name: Publish Beta or stable Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: Vagus ${{ needs.prepare.outputs.tag }}
+          body_path: ${{ needs.prepare.outputs.file }}
+          files: release-assets/*
+          prerelease: ${{ needs.prepare.outputs.prerelease }}
+          make_latest: ${{ needs.prepare.outputs.prerelease == 'false' }}

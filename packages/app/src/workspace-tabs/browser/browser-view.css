@@ -1,0 +1,26 @@
+.browser-view { display:flex; flex:1; flex-direction:column; min-width:0; min-height:0; overflow:hidden; background:var(--surface); container-name:browser-view; container-type:inline-size; }
+.browser-toolbar { display:grid; grid-template-columns:minmax(0,1fr) auto; flex:0 0 auto; align-items:center; gap:8px; min-height:48px; padding:6px 10px; border-bottom:1px solid var(--stroke); background:var(--raised); }
+.browser-navigation,.browser-tools { display:flex; min-width:0; align-items:center; gap:3px; }
+.browser-toolbar button { display:grid; width:30px; height:30px; flex:0 0 auto; place-items:center; border:0; border-radius:8px; color:var(--muted); background:transparent; cursor:pointer; }
+.browser-toolbar button:hover:not(:disabled),.browser-device-select:hover { color:var(--text); background:var(--hover-surface); }
+.browser-toolbar button.is-active { color:var(--text); background:var(--selected-surface); }
+.browser-toolbar button:disabled { opacity:.38; cursor:default; }
+.browser-address-form { display:flex; min-width:0; max-width:620px; height:34px; flex:1; align-items:center; gap:8px; margin-left:5px; padding-inline:10px; border:1px solid var(--stroke); border-radius:10px; color:var(--muted); background:var(--input); }
+.browser-address-form:focus-within { border-color:var(--stroke-strong); }
+.browser-address-form input { min-width:0; width:100%; border:0; outline:0; color:var(--text); background:transparent; font:inherit; }
+.browser-device-select { display:flex; width:94px; height:30px; flex:0 0 94px; align-items:center; gap:5px; padding:0 7px; border-radius:8px; color:var(--muted); }
+.browser-device-select select { min-width:0; width:100%; border:0; outline:0; color:var(--text); background:transparent; font:inherit; font-size:11px; text-overflow:ellipsis; }
+.browser-device-select option { color:var(--text); background:var(--raised); }
+.browser-tool-divider { width:1px; height:19px; flex:0 0 1px; margin-inline:3px; background:var(--stroke); }
+.browser-content { position:relative; min-width:0; min-height:0; flex:1; overflow:hidden; background:var(--surface); }
+.browser-content.is-device-preview { background:color-mix(in srgb,var(--surface) 90%,var(--muted)); }
+.browser-empty { display:flex; position:absolute; inset:0; align-items:center; justify-content:center; flex-direction:column; gap:15px; color:var(--muted); }
+.browser-empty strong { margin-top:12px; color:var(--text); font-size:17px; font-weight:550; }
+.browser-empty span { font-size:14px; }
+.browser-error { padding:7px 12px; border-bottom:1px solid var(--stroke); color:var(--danger); background:var(--raised); font-size:12px; }
+.browser-picker-banner { display:flex; flex:0 0 auto; align-items:center; gap:8px; min-height:34px; padding:4px 12px; border-bottom:1px solid var(--stroke); color:var(--text); background:var(--selected-surface); font-size:12px; }
+.browser-picker-banner button { display:grid; width:26px; height:26px; margin-left:auto; place-items:center; border:0; border-radius:7px; color:var(--muted); background:transparent; cursor:pointer; }
+.browser-picker-banner button:hover { color:var(--text); background:var(--hover-surface); }
+@container browser-view (max-width:680px) { .browser-toolbar { grid-template-columns:minmax(0,1fr); gap:5px; padding:6px 8px; } .browser-navigation { width:100%; } .browser-tools { justify-content:flex-end; } .browser-address-form { margin-left:3px; } }
+@container browser-view (max-width:380px) { .browser-toolbar { padding-inline:5px; } .browser-device-select { width:82px; flex-basis:82px; } }
+.browser-toolbar button,.browser-device-select,.browser-picker-banner button,.browser-selection-card footer > button { transition:background-color 120ms ease,color 120ms ease; }

@@ -1,0 +1,8 @@
+node_modules/
+**/node_modules/
+**/dist/
+**/target/
+packages/desktop/src-tauri/gen/
+coverage/
+package-lock.json
+*.snap

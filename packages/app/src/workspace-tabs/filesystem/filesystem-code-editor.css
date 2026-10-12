@@ -1,0 +1,26 @@
+.filesystem-code-editor {
+  flex: 1; min-width: 0; min-height: 0; overflow: hidden;
+  color: var(--code-fg); background: var(--code-bg);
+  font: var(--code-font-size, 12px)/1.65 var(--code-font-family, ui-monospace, "Cascadia Code", Consolas, monospace);
+  tab-size: 2;
+}
+.filesystem-code-editor > .cm-editor {
+  height: 100%; color: var(--code-fg); background: var(--code-bg);
+  font: inherit;
+}
+.filesystem-code-editor .cm-scroller { overflow: auto; font: inherit; }
+.filesystem-code-editor .cm-content { min-height: 100%; padding: 14px 16px 24px; caret-color: var(--text); }
+.filesystem-code-editor .cm-line { padding: 0; }
+.filesystem-code-editor .cm-gutters {
+  border-right: 1px solid var(--code-border); color: var(--code-gutter); background: var(--code-bg);
+}
+.filesystem-code-editor .cm-lineNumbers .cm-gutterElement { min-width: 5ch; padding: 0 12px 0 8px; }
+.filesystem-code-editor .cm-activeLine { background: color-mix(in srgb, var(--code-fg) 5%, transparent); }
+.filesystem-code-editor .cm-activeLineGutter { color: var(--code-fg); background: color-mix(in srgb, var(--code-fg) 7%, var(--code-bg)); }
+.filesystem-code-editor .cm-cursor, .filesystem-code-editor .cm-dropCursor { border-left-color: var(--text); }
+.filesystem-code-editor .cm-selectionBackground, .filesystem-code-editor.cm-focused .cm-selectionBackground { background: color-mix(in srgb, var(--text) 24%, transparent); }
+.filesystem-code-editor .cm-content ::selection { background: color-mix(in srgb, var(--text) 28%, transparent); }
+.filesystem-code-editor:not(.has-line-numbers) .cm-lineNumbers { display: none; }
+.filesystem-code-editor .cm-tooltip { border: 1px solid var(--stroke-strong); border-radius: 6px; color: var(--text); background: var(--raised); box-shadow: var(--shadow-card); }
+.filesystem-code-editor .cm-tooltip-autocomplete ul li[aria-selected] { color: var(--text); background: var(--selected-surface); }
+.filesystem-code-editor .cm-focused { outline: 0; }

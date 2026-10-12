@@ -1,0 +1,62 @@
+import type { AgentSession } from "@vagus/agent-core";
+import type { ScheduledTask } from "@vagus/protocol";
+import { type AgentEvent, type ProviderExtensionCatalog, type ProviderModelCatalog, type ProviderPackageInstallResult, type ProviderPluginCatalog, type SessionTimelineEntry, type SessionUiState } from "@vagus/protocol";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { monitorEventLoopDelay } from "node:perf_hooks";
+import { EnvHttpProxyAgent, setGlobalDispatcher } from "undici";
+import type { WebSocket } from "ws";
+import { createProviderRegistry } from "../agent/provider-registry.js";
+import { type Database, type Message, type WorkspaceSession } from "../storage/workspace-records.js";
+import { WorkspaceStore } from "../storage/workspace-store.js";
+import { hostAccess } from "../transport/rpc-transport.js";
+
+export function createHostState() {
+  const access = hostAccess();
+  const port = Number(process.env.VAGUS_HOST_PORT ?? 4317);
+  const dataDir = process.env.VAGUS_DATA_DIR ?? join(homedir(), ".vagus");
+  const store = new WorkspaceStore(dataDir);
+  const providerModelsFile = join(dataDir, "provider-models.json");
+  const providerSettingsFile = join(dataDir, "provider-settings.json");
+  const clients = new Set<WebSocket>();
+  const sessionSubscriptions = new WeakMap<WebSocket, string>();
+  const liveAgents = new Map<string, AgentSession>();
+  const provisioningSessionIds = new Set<string>();
+  const agentLastActivity = new Map<string, number>();
+  const agentStarts = new Map<string, Promise<AgentSession>>();
+  const sessionEmitters = new Map<string, (event: AgentEvent) => void>();
+  const sessionEmitterFlushers = new Map<string, () => void>();
+  const compactingSessions = new Set<string>();
+  const sessionUi = new Map<string, SessionUiState>();
+  const providers = createProviderRegistry();
+  const providerEnabled = new Map<string, boolean>();
+  const providerModelCatalogs = new Map<string, ProviderModelCatalog>();
+  const providerModelRefreshes = new Map<string, Promise<ProviderModelCatalog>>();
+  const providerExtensionReads = new Map<string, Promise<ProviderExtensionCatalog>>();
+  const providerPluginReads = new Map<string, Promise<ProviderPluginCatalog>>();
+  const providerPluginMutations = new Set<string>();
+  const providerMcpReads = new Map<string, Promise<import("@vagus/protocol").ProviderMcpCatalog>>();
+  const providerPackageInstalls = new Map<string, Promise<ProviderPackageInstallResult>>();
+  let database: Database = { projects: [], sessions: [] };
+  let scheduledTasks: ScheduledTask[] = [];
+  const scheduledTaskMutations = new Set<string>();
+  let writeQueue = Promise.resolve();
+  let writeTimer: ReturnType<typeof setTimeout> | undefined;
+  const eventLoop = monitorEventLoopDelay({ resolution: 20 });
+  const performanceStats = new Map<string, { count: number; totalMs: number; maxMs: number }>();
+  const idleAgentTtlMs = Math.max(1_000, Number(process.env.VAGUS_IDLE_AGENT_TTL_MS) || 15 * 60_000);
+  const maxIdleAgents = Math.max(1, Math.min(32, Number(process.env.VAGUS_MAX_IDLE_AGENTS) || 4));
+  const idleAgentSweepMs = Math.max(50, Number(process.env.VAGUS_IDLE_AGENT_SWEEP_MS) || 60_000);
+  const loadedHistories = new Map<string, number>();
+  const loadingHistories = new Map<string, Promise<void>>();
+  const dirtyEntries = new Map<string, { sessionId: string; entry: SessionTimelineEntry }>();
+  let sessionArray: WorkspaceSession[] | undefined;
+  let sessionIndex = new Map<string, WorkspaceSession>();
+  const entryIndexes = new WeakMap<WorkspaceSession, { messages: Map<string, Message>; entries: Map<string, SessionTimelineEntry> }>();
+  if (process.env.HTTP_PROXY || process.env.HTTPS_PROXY || process.env.ALL_PROXY) {
+    setGlobalDispatcher(new EnvHttpProxyAgent());
+  }
+  if (process.env.VAGUS_PROFILE === "1") eventLoop.enable();
+  return { access, port, dataDir, store, providerModelsFile, providerSettingsFile, clients, sessionSubscriptions, liveAgents, provisioningSessionIds, agentLastActivity, agentStarts, sessionEmitters, sessionEmitterFlushers, compactingSessions, sessionUi, providers, providerEnabled, providerModelCatalogs, providerModelRefreshes, providerExtensionReads, providerPluginReads, providerPluginMutations, providerMcpReads, providerPackageInstalls, database, scheduledTasks, scheduledTaskMutations, writeQueue, writeTimer, eventLoop, performanceStats, idleAgentTtlMs, maxIdleAgents, idleAgentSweepMs, loadedHistories, loadingHistories, dirtyEntries, sessionArray, sessionIndex, entryIndexes };
+}
+export type HostState = ReturnType<typeof createHostState>;

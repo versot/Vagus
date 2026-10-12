@@ -1,0 +1,39 @@
+.code-block[data-code-theme="github-light"], .filesystem-code-editor[data-code-theme="github-light"] {
+  --code-bg: #f6f8fa; --code-fg: #1f2328; --code-gutter: #6e7781; --code-border: #d0d7de;
+  --code-keyword: #cf222e; --code-string: #0a3069; --code-number: #0550ae; --code-title: #8250df; --code-comment: #6e7781; --code-attr: #0550ae;
+}
+.code-block[data-code-theme="github-dark"], .filesystem-code-editor[data-code-theme="github-dark"] {
+  --code-bg: #161b22; --code-fg: #e6edf3; --code-gutter: #8b949e; --code-border: #30363d;
+  --code-keyword: #ff7b72; --code-string: #a5d6ff; --code-number: #79c0ff; --code-title: #d2a8ff; --code-comment: #8b949e; --code-attr: #79c0ff;
+}
+.code-block[data-code-theme="solarized-light"], .filesystem-code-editor[data-code-theme="solarized-light"] {
+  --code-bg: #fdf6e3; --code-fg: #586e75; --code-gutter: #839496; --code-border: #e6dec8;
+  --code-keyword: #859900; --code-string: #2aa198; --code-number: #d33682; --code-title: #268bd2; --code-comment: #93a1a1; --code-attr: #b58900;
+}
+.code-block[data-code-theme="monokai"], .filesystem-code-editor[data-code-theme="monokai"] {
+  --code-bg: #272822; --code-fg: #f8f8f2; --code-gutter: #99998b; --code-border: #46473c;
+  --code-keyword: #f92672; --code-string: #e6db74; --code-number: #ae81ff; --code-title: #a6e22e; --code-comment: #99998b; --code-attr: #66d9ef;
+}
+pre.code-block[data-code-theme] {
+  max-width: 100%; margin: 8px 0 10px; padding: 12px 0;
+  overflow: auto; border: 1px solid var(--code-border); border-radius: 10px;
+  background: var(--code-bg); color: var(--code-fg);
+  font: var(--code-font-size, 12px)/1.65 ui-monospace, "Cascadia Code", Consolas, monospace;
+  tab-size: 2; text-align: left; white-space: pre; overflow-wrap: normal;
+}
+pre.code-block[data-code-theme] > code { display: block; width: max-content; min-width: 100%; font: inherit; color: inherit; background: none; padding: 0; border: 0; }
+.code-line { display: flex; align-items: flex-start; min-height: 1.65em; padding: 0 14px; }
+.code-line-number { width: 3.5ch; flex: 0 0 3.5ch; margin-right: 14px; color: var(--code-gutter); text-align: right; user-select: none; }
+.code-line-content { flex: 1; min-width: 0; }
+pre.code-block.is-wrapped[data-code-theme] > code { width: 100%; }
+.code-block.is-wrapped .code-line-content { white-space: pre-wrap; overflow-wrap: anywhere; }
+.code-block .hljs-keyword, .code-block .hljs-literal, .code-block .hljs-selector-tag { color: var(--code-keyword); }
+.code-block .hljs-string, .code-block .hljs-regexp, .code-block .hljs-addition { color: var(--code-string); }
+.code-block .hljs-number, .code-block .hljs-built_in, .code-block .hljs-type { color: var(--code-number); }
+.code-block .hljs-title, .code-block .hljs-section { color: var(--code-title); }
+.code-block .hljs-comment, .code-block .hljs-quote { color: var(--code-comment); }
+.code-block .hljs-attr, .code-block .hljs-attribute, .code-block .hljs-variable, .code-block .hljs-name { color: var(--code-attr); }
+.code-block .hljs-emphasis { font-style: italic; }
+.code-block .hljs-strong { font-weight: 600; }
+.tool-file-diff pre.code-block.removed { background: color-mix(in srgb, var(--code-bg) 92%, #ef4444); }
+.tool-file-diff pre.code-block.added { background: color-mix(in srgb, var(--code-bg) 92%, #22c55e); }

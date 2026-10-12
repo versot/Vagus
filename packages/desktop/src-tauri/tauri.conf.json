@@ -1,0 +1,44 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Vagus",
+  "version": "0.1.0",
+  "identifier": "sh.vagus.desktop",
+  "build": {
+    "beforeDevCommand": "npm --prefix ../../ run dev --workspace=@vagus/app",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "npm --prefix ../../ run build:host && npm --prefix ../../ run bundle:desktop --workspace=@vagus/host && npm --prefix ../../ run build:app",
+    "frontendDist": "../../app/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Vagus",
+        "width": 1440,
+        "height": 920,
+        "minWidth": 900,
+        "minHeight": 620,
+        "center": true,
+        "decorations": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost ws://127.0.0.1:4317; img-src 'self' asset: data: http: https:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico", "icons/icon.icns"],
+    "resources": {
+      "../../host/dist/standalone/*": "host/",
+      "../../host/dist/standalone/node_modules": "host/node_modules/",
+      "../../../LICENSE": "LICENSE"
+    },
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
+  }
+}

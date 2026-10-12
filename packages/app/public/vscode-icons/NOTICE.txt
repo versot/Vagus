@@ -1,0 +1,1 @@
+These SVG files are selected icons from the VSCode Icons project (vscode-icons/icon-set version 13.0.0), distributed under the MIT License. The original project and license are available at https://github.com/vscode-icons/vscode-icons.
