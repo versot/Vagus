@@ -57,15 +57,15 @@ Las herramientas oficiales de cada agente gestionan su instalación, cuenta y mo
 
 ## Plataformas
 
-Vagus está preparando su fase Beta y todavía no ha publicado el primer instalador. El flujo de publicación está configurado para Windows x64 y macOS Intel y Apple silicon. No se han configurado la firma de código ni la notarización de macOS, y los paquetes de macOS no han superado la validación de lanzamiento. Linux no está soportado actualmente.
+Vagus está en fase Beta pública. La primera versión ofrece instaladores para Windows x64, macOS Intel y Apple silicon. No se han configurado la firma de código ni la notarización de macOS, y los paquetes de macOS no han superado la validación de lanzamiento. Linux no está soportado actualmente.
 
 ## Versiones Beta y descargas
 
-Las versiones públicas de prueba se publicarán como GitHub Pre-releases con versiones como `0.1.0-beta.1`. Cada página de versión incluirá instaladores, notas y problemas conocidos. Haz una copia de seguridad de tus datos antes de probarlas e incluye la versión de Vagus y tu sistema operativo al informar de un problema.
+La primera versión pública de prueba está disponible en [Vagus v0.1.0-beta.1](https://github.com/versot/Vagus/releases/tag/v0.1.0-beta.1). Cada página de GitHub Pre-release incluye instaladores, notas y problemas conocidos. Haz una copia de seguridad de tus datos antes de probarla e incluye la versión de Vagus y tu sistema operativo al informar de un problema.
 
 La aplicación de escritorio usa Node.js local para ejecutar Vagus Host y requiere Node.js 22.13 o posterior. Cada usuario instala, configura e inicia sesión en las CLI de los agentes que necesite. Los instaladores no incluyen Node.js ni las CLI de los agentes.
 
-Cada versión tiene sus propias notas en [`releases/`](releases/); ese mismo archivo Markdown se utiliza como descripción de GitHub Release. Todavía no se ha publicado ningún instalador Beta.
+Cada versión tiene sus propias notas en [`releases/`](releases/); ese mismo archivo Markdown se utiliza como descripción de GitHub Release.
 
 ### Requisitos
 

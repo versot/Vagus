@@ -74,15 +74,15 @@ Vagus 將專案與 Agent 對話集中在同一個桌面工作區。你可以選�
 
 ## 平台狀態
 
-Vagus 正在準備 Beta 測試，首個安裝程式尚未發布。 發布工作流程已設定為建置 Windows x64、macOS Intel 及 Apple 晶片版本；目前未設定平台程式碼簽署或 macOS 公證，macOS 套件也尚未完成發行級驗證。 暫不支援 Linux。
+Vagus 已進入公開 Beta 測試階段，首個版本提供 Windows x64、macOS Intel 及 Apple 晶片安裝程式。目前未設定平台程式碼簽署或 macOS 公證，macOS 套件也尚未完成發行級驗證。暫不支援 Linux。
 
 ## Beta 版本與下載
 
-每個公開測試版本預計會以 GitHub Pre-release 發布，版本號格式例如 `0.1.0-beta.1`。各平台安裝程式、版本說明及已知問題會列於該版本的 Release 頁面。測試前請先備份重要資料，回報問題時請註明 Vagus 版本及作業系統。
+首個公開測試版本可從 [Vagus v0.1.0-beta.1](https://github.com/versot/Vagus/releases/tag/v0.1.0-beta.1) 下載。每個 GitHub Pre-release 頁面都會列出安裝程式、版本說明及已知問題。測試前請先備份重要資料，回報問題時請註明 Vagus 版本及作業系統。
 
 桌面應用程式會使用本機 Node.js 執行 Vagus Host，需要 Node.js 22.13 或更新版本。使用者需自行安裝、登入並設定所需的 Agent CLI。安裝程式不包含 Node.js 或 Agent CLI。
 
-每個版本的使用者可見變更會分別記錄於 [`releases/`](releases/)，同一份 Markdown 說明也會作為 GitHub Release 的內文。目前尚未發布 Beta 安裝程式。
+每個版本的使用者可見變更會分別記錄於 [`releases/`](releases/)，同一份 Markdown 說明也會作為 GitHub Release 的內文。
 
 ### 環境需求
 

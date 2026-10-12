@@ -57,15 +57,15 @@ As ferramentas oficiais de cada agente gerenciam instalação, conta e configura
 
 ## Plataformas
 
-O Vagus está se preparando para a fase Beta e ainda não publicou o primeiro instalador. O fluxo de lançamento está configurado para Windows x64 e macOS Intel e Apple silicon. Não há assinatura de código nem notarização do macOS configuradas, e os pacotes para macOS ainda não passaram pela validação de lançamento. Linux não é compatível no momento.
+O Vagus está em Beta público. A primeira versão oferece instaladores para Windows x64, macOS Intel e Apple silicon. Não há assinatura de código nem notarização do macOS configuradas, e os pacotes para macOS ainda não passaram pela validação de lançamento. Linux não é compatível no momento.
 
 ## Versões Beta e downloads
 
-As versões públicas de teste serão publicadas como GitHub Pre-releases, com números como `0.1.0-beta.1`. Cada página de lançamento terá instaladores, notas da versão e problemas conhecidos. Faça backup dos dados importantes antes de testar e informe a versão do Vagus e o sistema operacional ao relatar um problema.
+A primeira versão pública de teste está disponível em [Vagus v0.1.0-beta.1](https://github.com/versot/Vagus/releases/tag/v0.1.0-beta.1). Cada GitHub Pre-release apresenta instaladores, notas da versão e problemas conhecidos. Faça backup dos dados importantes antes de testar e informe a versão do Vagus e o sistema operacional ao relatar um problema.
 
 O aplicativo desktop usa o Node.js local para executar o Vagus Host e requer Node.js 22.13 ou posterior. Cada usuário instala, configura e faz login nas CLIs dos agentes que precisar. Os instaladores não incluem Node.js nem as CLIs dos agentes.
 
-Cada versão tem suas próprias notas em [`releases/`](releases/); o mesmo arquivo Markdown é usado como descrição do GitHub Release. Nenhum instalador Beta foi publicado ainda.
+Cada versão tem suas próprias notas em [`releases/`](releases/); o mesmo arquivo Markdown é usado como descrição do GitHub Release.
 
 ### Requisitos
 

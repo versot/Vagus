@@ -17,6 +17,6 @@ Release notes must be written in professional, concise English. The workflow rej
 3. Include the version updates and exactly one new release note in a pull request to `main`.
 4. After the pull request is merged, review the platform builds and publication result in the GitHub Actions Beta Release workflow.
 
-The proposed first Beta version is `0.1.0-beta.1`. Do not merge a release note until the installers are ready to publish and the release contents have been reviewed. The workflow publishes automatically after the merge.
+The first public Beta is [`v0.1.0-beta.1`](v0.1.0-beta.1.md). For later versions, review the release contents and installer readiness before merging the release note. The workflow publishes automatically after the merge.
 
 See [`TEMPLATE.md`](TEMPLATE.md) for the required structure.

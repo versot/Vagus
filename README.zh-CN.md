@@ -74,11 +74,11 @@ Agent 的安装、账号和模型配置由各自的官方工具管理。 Vagus �
 
 ## 当前平台
 
-Vagus 处于 Beta 测试阶段，尚未发布首个安装包。 发布工作流已配置为构建 Windows x64 和 macOS Intel/Apple 芯片安装包；目前不配置平台代码签名或 macOS 公证，macOS 包也未经发行级验证。 Linux 暂不支持。
+Vagus 已进入公开 Beta 测试阶段，首个版本提供 Windows x64、macOS Intel 和 Apple 芯片安装包。目前未配置平台代码签名或 macOS 公证，macOS 安装包也未经发行级验证。Linux 暂不支持。
 
 ## Beta 版本与下载
 
-每个公开测试版本会以 GitHub Pre-release 发布，版本号采用 `0.1.0-beta.N`，例如 `0.1.0-beta.1`。各平台安装包、变更说明和已知问题会放在该版本的 Release 页面。Beta 期间请先备份重要数据，并在提交问题时注明版本号和操作系统。
+首个公开测试版本可从 [Vagus v0.1.0-beta.1](https://github.com/versot/Vagus/releases/tag/v0.1.0-beta.1) 下载。每个 GitHub Pre-release 页面都会列出安装包、变更说明和已知问题。Beta 期间请先备份重要数据，并在提交问题时注明版本号和操作系统。
 
 桌面应用会调用本机 Node.js 运行 Vagus Host；需要 Node.js 22.13 或更新版本，并由用户自行安装、登录和配置所需的 Agent CLI。安装包不包含 Node.js 或这些 Agent。
 

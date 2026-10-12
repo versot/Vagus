@@ -57,17 +57,15 @@ Les outils officiels de chaque agent gèrent son installation, son compte et sa 
 
 ## Plateformes
 
-Vagus prépare sa phase Beta et n’a pas encore publié son premier installateur. Le workflow de publication est configuré pour Windows x64 et macOS Intel et Apple silicon. La signature du code et la notarisation macOS ne sont pas configurées, et les paquets macOS n’ont pas passé la validation de publication. Linux n’est pas pris en charge actuellement.
+Vagus est en phase bêta publique. La première version propose des installateurs pour Windows x64, macOS Intel et Apple silicon. La signature du code et la notarisation macOS ne sont pas configurées, et les paquets macOS n’ont pas passé la validation de publication. Linux n’est pas pris en charge actuellement.
 
 ## Versions Beta et téléchargements
 
-Les versions de test publiques seront publiées en GitHub Pre-release avec des numéros tels que `0.1.0-beta.1`. Chaque page de version présentera les installateurs, les notes de version et les problèmes connus. Sauvegardez vos données importantes avant de tester et indiquez la version de Vagus et votre système d’exploitation lors d’un signalement.
-
-Téléchargements prévus :
+La première version de test publique est disponible sur la page [Vagus v0.1.0-beta.1](https://github.com/versot/Vagus/releases/tag/v0.1.0-beta.1). Chaque GitHub Pre-release présente les installateurs, les notes de version et les problèmes connus. Sauvegardez vos données importantes avant de tester et indiquez la version de Vagus et votre système d’exploitation lors d’un signalement.
 
 L’application de bureau utilise Node.js local pour exécuter Vagus Host et nécessite Node.js 22.13 ou une version ultérieure. Chaque utilisateur installe, configure et connecte les CLI des agents dont il a besoin. Les installateurs n’incluent ni Node.js ni les CLI des agents.
 
-Chaque version possède ses propres notes dans [`releases/`](releases/) ; ce fichier Markdown sert également de description au GitHub Release. Aucun installateur Beta n’a encore été publié.
+Chaque version possède ses propres notes dans [`releases/`](releases/) ; ce fichier Markdown sert également de description au GitHub Release.
 
 ### Prérequis
 

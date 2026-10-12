@@ -57,15 +57,15 @@ Die offiziellen Tools der Agenten verwalten Installation, Konto und Modellkonfig
 
 ## Plattformen
 
-Vagus bereitet die Beta-Phase vor; der erste Installer wurde noch nicht veröffentlicht. Der Release-Workflow ist für Windows x64 sowie macOS Intel und Apple silicon eingerichtet. Codesignierung und macOS-Notarisierung sind nicht konfiguriert; die macOS-Pakete wurden noch keiner Release-Abnahme unterzogen. Linux wird derzeit nicht unterstützt. Ein Build-Ziel ist kein Nachweis für getestete Kompatibilität.
+Vagus befindet sich in der öffentlichen Beta-Phase. Die erste Version bietet Installer für Windows x64, macOS Intel und Apple silicon. Codesignierung und macOS-Notarisierung sind nicht konfiguriert; die macOS-Pakete wurden noch keiner Release-Abnahme unterzogen. Linux wird derzeit nicht unterstützt. Ein Build-Ziel ist kein Nachweis für getestete Kompatibilität.
 
 ## Beta-Versionen und Downloads
 
-Öffentliche Testversionen sollen als GitHub Pre-releases mit Versionsnummern wie `0.1.0-beta.1` erscheinen. Auf jeder Release-Seite finden Sie Installer, Versionshinweise und bekannte Probleme. Sichern Sie wichtige Daten vor dem Test und nennen Sie bei Fehlerberichten Ihre Vagus-Version und Ihr Betriebssystem.
+Die erste öffentliche Testversion steht unter [Vagus v0.1.0-beta.1](https://github.com/versot/Vagus/releases/tag/v0.1.0-beta.1) bereit. Auf jeder GitHub-Release-Seite finden Sie Installer, Versionshinweise und bekannte Probleme. Sichern Sie wichtige Daten vor dem Test und nennen Sie bei Fehlerberichten Ihre Vagus-Version und Ihr Betriebssystem.
 
 Die Desktop-App verwendet das lokale Node.js, um Vagus Host auszuführen, und benötigt Node.js 22.13 oder höher. Nutzer installieren, konfigurieren und authentifizieren die benötigten Agent-CLIs selbst. Die Installer enthalten weder Node.js noch Agent-CLIs.
 
-Für jede Version gibt es eigene Hinweise unter [`releases/`](releases/). Dieselbe Markdown-Datei dient als Beschreibung des GitHub Release. Bisher wurde noch kein Beta-Installer veröffentlicht.
+Für jede Version gibt es eigene Hinweise unter [`releases/`](releases/). Dieselbe Markdown-Datei dient als Beschreibung des GitHub Release.
 
 ### Voraussetzungen
 

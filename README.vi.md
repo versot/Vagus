@@ -57,17 +57,15 @@ Công cụ chính thức của từng Agent quản lý việc cài đặt, tài 
 
 ## Nền tảng
 
-Vagus đang chuẩn bị cho giai đoạn Beta và chưa phát hành bộ cài đầu tiên. Quy trình phát hành được cấu hình để build cho Windows x64 và macOS Intel, Apple silicon. Chưa cấu hình ký mã hoặc notarization cho macOS; các gói macOS chưa qua kiểm định phát hành. Hiện chưa hỗ trợ Linux.
+Vagus đang trong giai đoạn Beta công khai. Bản phát hành đầu tiên có bộ cài cho Windows x64, macOS Intel và Apple silicon. Chưa cấu hình ký mã hoặc notarization cho macOS; các gói macOS chưa qua kiểm định phát hành. Hiện chưa hỗ trợ Linux.
 
 ## Bản Beta và tải xuống
 
-Các bản thử nghiệm công khai dự kiến được phát hành dưới dạng GitHub Pre-release với phiên bản như `0.1.0-beta.1`. Trang của mỗi bản phát hành sẽ có bộ cài, ghi chú thay đổi và vấn đề đã biết. Hãy sao lưu dữ liệu quan trọng trước khi thử nghiệm và ghi rõ phiên bản Vagus cùng hệ điều hành khi báo lỗi.
-
-Tệp tải xuống dự kiến:
+Bản thử nghiệm công khai đầu tiên có thể tải tại [Vagus v0.1.0-beta.1](https://github.com/versot/Vagus/releases/tag/v0.1.0-beta.1). Mỗi trang GitHub Pre-release liệt kê bộ cài, ghi chú thay đổi và các vấn đề đã biết. Hãy sao lưu dữ liệu quan trọng trước khi thử nghiệm và ghi rõ phiên bản Vagus cùng hệ điều hành khi báo lỗi.
 
 Ứng dụng desktop dùng Node.js cục bộ để chạy Vagus Host và cần Node.js 22.13 trở lên. Người dùng tự cài đặt, đăng nhập và cấu hình các CLI Agent cần thiết. Bộ cài không bao gồm Node.js hoặc CLI của Agent.
 
-Mỗi phiên bản có tệp ghi chú riêng trong [`releases/`](releases/); cùng tệp Markdown đó sẽ được dùng làm nội dung GitHub Release. Hiện chưa phát hành bộ cài Beta nào.
+Mỗi phiên bản có tệp ghi chú riêng trong [`releases/`](releases/); cùng tệp Markdown đó được dùng làm nội dung GitHub Release.
 
 ### Yêu cầu
 

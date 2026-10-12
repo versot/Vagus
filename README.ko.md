@@ -57,15 +57,15 @@ Vagus는 프로젝트와 Agent 대화를 하나의 데스크톱 작업 공간에
 
 ## 플랫폼 현황
 
-Vagus는 베타 준비 단계이며 첫 설치 프로그램은 아직 공개되지 않았습니다. 릴리스 워크플로는 Windows x64와 macOS Intel 및 Apple silicon 빌드를 대상으로 합니다. 코드 서명과 macOS 공증은 설정되어 있지 않고 macOS 패키지는 릴리스 수준 검증을 마치지 않았습니다.
+Vagus는 공개 베타 단계입니다. 첫 릴리스에서는 Windows x64, macOS Intel 및 Apple silicon용 설치 프로그램을 제공합니다. 코드 서명과 macOS 공증은 설정되어 있지 않고 macOS 패키지는 릴리스 수준 검증을 마치지 않았습니다.
 
 ## 베타 릴리스 및 다운로드
 
-공개 테스트 버전은 `0.1.0-beta.1` 같은 버전으로 GitHub Pre-release에 게시할 예정입니다. 각 릴리스 페이지에서 설치 프로그램, 변경 사항, 알려진 문제를 확인할 수 있습니다. 테스트 전 중요한 데이터를 백업하고 문제를 제보할 때 Vagus 버전과 운영체제를 적어 주세요.
+첫 공개 테스트 버전은 [Vagus v0.1.0-beta.1](https://github.com/versot/Vagus/releases/tag/v0.1.0-beta.1)에서 다운로드할 수 있습니다. 각 GitHub Pre-release 페이지에서 설치 프로그램, 변경 사항, 알려진 문제를 확인할 수 있습니다. 테스트 전 중요한 데이터를 백업하고 문제를 제보할 때 Vagus 버전과 운영체제를 적어 주세요.
 
 데스크톱 앱은 로컬 Node.js로 Vagus Host를 실행하며 Node.js 22.13 이상이 필요합니다. 필요한 Agent CLI는 사용자가 직접 설치하고 로그인 및 설정해야 합니다. 설치 프로그램에는 Node.js나 Agent CLI가 포함되지 않습니다.
 
-각 버전의 사용자용 변경 내역은 [`releases/`](releases/)에 별도 Markdown 파일로 기록되며 GitHub Release 본문에도 사용됩니다. 아직 베타 설치 프로그램은 공개되지 않았습니다.
+각 버전의 사용자용 변경 내역은 [`releases/`](releases/)에 별도 Markdown 파일로 기록되며 GitHub Release 본문에도 사용됩니다.
 
 ### 요구 사항
 

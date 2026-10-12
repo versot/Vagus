@@ -86,11 +86,11 @@ Each agent's official tools manage its installation, account, and model configur
 
 ## Platform status
 
-Vagus is in Beta preparation; the first installer has not been released. The release workflow is configured to build installers for Windows x64 and macOS Intel and Apple silicon. Platform code signing and macOS notarization are not configured, and the macOS packages have not passed release-level validation. Linux is not currently supported.
+Vagus is in public Beta. The first release provides installers for Windows x64, macOS Intel, and macOS Apple silicon. Platform code signing and macOS notarization are not configured, and the macOS packages have not passed release-level validation. Linux is not currently supported.
 
 ## Beta releases and downloads
 
-Public test builds will be published as GitHub pre-releases using versions such as `0.1.0-beta.1`. Installers, release notes, and known issues will be listed on each release page. Back up important data before testing, and include your Vagus version and operating system when reporting a problem.
+Download the first public test build from [Vagus v0.1.0-beta.1](https://github.com/versot/Vagus/releases/tag/v0.1.0-beta.1). Each GitHub pre-release lists its installers, release notes, and known issues. Back up important data before testing, and include your Vagus version and operating system when reporting a problem.
 
 The desktop app uses the local Node.js runtime to run Vagus Host. Node.js 22.13 or later is required. Users install, sign in to, and configure the agent CLIs they need; installers do not bundle Node.js or agent CLIs.
 
