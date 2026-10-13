@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { ClaudeProvider } from "../packages/host/dist/agent/providers/claude/claude-provider.js";
 
-const executable = 'isolated-fake-claude-cli';
+// The provider validates configured executable paths before invoking the
+// injected command runner. Use a real cross-platform executable path so these
+// tests remain isolated from whether Claude Code is installed on the machine.
+const executable = process.execPath;
 
 async function withFakeClaude(run) {
   const previous = process.env.CLAUDE_CODE_EXECUTABLE;

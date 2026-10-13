@@ -1125,7 +1125,7 @@ export function ArchiveSettingsApp({
                         </div>
                       )}
                       {selectedCatalog?.executablePath && (
-                        <div className="provider-executable-location">
+                        <div className={`provider-executable-location${selectedCatalog.stale ? " is-stale" : ""}`}>
                           <span>{i18n.t(selectedCatalog.stale ? "上次成功的可执行文件" : "当前可执行文件")}</span>
                           <code title={selectedCatalog.executablePath}>{selectedCatalog.executablePath}</code>
                           {selectedCatalog.executableSource && <small>{selectedCatalog.executableSource}</small>}
