@@ -30,15 +30,17 @@ export class PiRpcProcess {
   private exitError: Error | null = null;
   private readonly exited: Promise<void>;
   private resolveExited!: () => void;
-  get available() { return this.exitError === null; }
+  get available() {
+    return this.exitError === null;
+  }
 
-  constructor(options: { command: string; cwd: string; args?: string[] }) {
+  constructor(options: { command: string; cwd: string; args?: string[]; environment?: NodeJS.ProcessEnv }) {
     this.exited = new Promise<void>((resolve) => {
       this.resolveExited = resolve;
     });
     this.child = spawn(options.command, ["--mode", "rpc", ...(options.args ?? [])], {
       cwd: options.cwd,
-      env: providerEnvironment(),
+      env: options.environment ?? providerEnvironment(),
       stdio: ["pipe", "pipe", "pipe"],
       windowsHide: true,
     });
@@ -181,7 +183,13 @@ export class PiRpcProcess {
       pending.reject(error);
     }
     this.pending.clear();
-    for (const listener of this.exitListeners) { try { listener(error); } catch { /* Preserve pending-request and shutdown cleanup. */ } }
+    for (const listener of this.exitListeners) {
+      try {
+        listener(error);
+      } catch {
+        /* Preserve pending-request and shutdown cleanup. */
+      }
+    }
     this.resolveExited();
   }
 }

@@ -28,8 +28,23 @@ export interface SessionUiState {
 }
 
 export type SessionUiEvent =
-  | { type: "ui.status"; sessionId: SessionId; key: string; text: string | null; subagentSessionId?: string; subagentCancellable?: boolean; subagentState?: "running" | "idle" | "requires_action" | "unknown" | "completed" | "failed" | "cancelled" | "disconnected" }
-  | { type: "ui.widget"; sessionId: SessionId; key: string; content: SessionUiWidgetContent | null; placement: "aboveEditor" | "belowEditor" }
+  | {
+      type: "ui.status";
+      sessionId: SessionId;
+      key: string;
+      text: string | null;
+      subagentSessionId?: string;
+      subagentCancellable?: boolean;
+      subagentState?:
+        "running" | "idle" | "requires_action" | "unknown" | "completed" | "failed" | "cancelled" | "disconnected";
+    }
+  | {
+      type: "ui.widget";
+      sessionId: SessionId;
+      key: string;
+      content: SessionUiWidgetContent | null;
+      placement: "aboveEditor" | "belowEditor";
+    }
   | { type: "ui.editorText"; sessionId: SessionId; requestId: string; text: string }
   | { type: "ui.editorText.dismissed"; sessionId: SessionId; requestId: string }
   | { type: "ui.reset"; sessionId: SessionId };
@@ -42,7 +57,9 @@ export function applySessionUiEvent(state: SessionUiState | undefined, event: Se
     // extension status rail. Keep legacy Claude keys readable while providers
     // migrate to the shared subagent namespace.
     const isSubagent = event.key.startsWith("subagent:") || event.key.startsWith("claude-subagent:");
-    const statuses = current.statuses.filter((item) => item.key !== event.key && !item.key.startsWith("claude-subagent:") && !item.key.startsWith("subagent:"));
+    const statuses = current.statuses.filter(
+      (item) => item.key !== event.key && !item.key.startsWith("claude-subagent:") && !item.key.startsWith("subagent:"),
+    );
     if (event.key === "agent-activity" || isSubagent) return { ...current, statuses };
     if (event.text) {
       const index = current.statuses.findIndex((item) => item.key === event.key);
@@ -54,11 +71,16 @@ export function applySessionUiEvent(state: SessionUiState | undefined, event: Se
     const widgets = current.widgets.filter((item) => item.key !== event.key);
     if (event.content && event.content.lines.length > 0) {
       const index = current.widgets.findIndex((item) => item.key === event.key);
-      widgets.splice(index < 0 ? widgets.length : index, 0, { key: event.key, content: event.content, placement: event.placement });
+      widgets.splice(index < 0 ? widgets.length : index, 0, {
+        key: event.key,
+        content: event.content,
+        placement: event.placement,
+      });
     }
     return { ...current, widgets };
   }
-  if (event.type === "ui.editorText") return { ...current, editorText: { requestId: event.requestId, text: event.text } };
+  if (event.type === "ui.editorText")
+    return { ...current, editorText: { requestId: event.requestId, text: event.text } };
   if (current.editorText?.requestId !== event.requestId) return current;
   const { editorText: _draft, ...rest } = current;
   return rest;
@@ -157,7 +179,8 @@ export type SessionTimelineEntry =
       text: string;
       subagentSessionId?: string;
       subagentCancellable?: boolean;
-      subagentState?: "running" | "idle" | "requires_action" | "unknown" | "completed" | "failed" | "cancelled" | "disconnected";
+      subagentState?:
+        "running" | "idle" | "requires_action" | "unknown" | "completed" | "failed" | "cancelled" | "disconnected";
     }
   | {
       kind: "interaction";
@@ -226,6 +249,10 @@ export interface ProviderModelCatalog {
   currentModeId?: string | null;
   /** Modes exposed by the Provider for a new session, when supported. */
   availableModes?: Array<{ id: string; name: string; description?: string }>;
+  /** Resolved local CLI path used by this catalog refresh, when available. */
+  executablePath?: string;
+  /** Discovery source for the resolved CLI path, such as PATH or a system index. */
+  executableSource?: string;
   fetchedAt: string;
   status: "loading" | "ready" | "error";
   stale: boolean;
@@ -256,9 +283,27 @@ export interface ProviderExtensionCatalog {
 /** Claude Code plugin inventory as reported by its own CLI. Paths remain local metadata. */
 export interface ProviderPluginCatalog {
   providerId: string;
-  installed: Array<{ id: string; version?: string; scope?: string; enabled: boolean; installPath?: string; installedAt?: string; lastUpdated?: string; projectEnabled?: boolean; canToggle?: boolean; canUninstall?: boolean }>;
+  installed: Array<{
+    id: string;
+    version?: string;
+    scope?: string;
+    enabled: boolean;
+    installPath?: string;
+    installedAt?: string;
+    lastUpdated?: string;
+    projectEnabled?: boolean;
+    canToggle?: boolean;
+    canUninstall?: boolean;
+  }>;
   available: Array<{ id: string; name: string; description?: string; marketplace: string; source?: string }>;
-  marketplaces: Array<{ name: string; source?: string; path?: string; installLocation?: string; canManage?: boolean; canUpdate?: boolean }>;
+  marketplaces: Array<{
+    name: string;
+    source?: string;
+    path?: string;
+    installLocation?: string;
+    canManage?: boolean;
+    canUpdate?: boolean;
+  }>;
   fetchedAt: string;
   warnings?: string[];
 }
@@ -273,7 +318,12 @@ export interface ProviderPluginInstallResult {
   command?: string;
   commandSha256?: string;
 }
-export interface ProviderPluginMutationResult { providerId: string; target: string; action: string; completed: true }
+export interface ProviderPluginMutationResult {
+  providerId: string;
+  target: string;
+  action: string;
+  completed: true;
+}
 
 /** Sanitized MCP inventory reported by the Provider's native CLI. Secrets and raw connection arguments are never returned. */
 export interface ProviderMcpCatalog {
@@ -281,7 +331,22 @@ export interface ProviderMcpCatalog {
   servers: ProviderMcpServer[];
   fetchedAt: string;
 }
-export interface ProviderMcpServer { name: string; scope: "local" | "project" | "user" | "managed" | "unknown"; transport: "stdio" | "http" | "sse" | "websocket" | "unknown"; status: "connected" | "disconnected" | "pending" | "needs-authentication" | "disabled" | "rejected" | "cached" | "not-configured" | "error" | "unknown" }
+export interface ProviderMcpServer {
+  name: string;
+  scope: "local" | "project" | "user" | "managed" | "unknown";
+  transport: "stdio" | "http" | "sse" | "websocket" | "unknown";
+  status:
+    | "connected"
+    | "disconnected"
+    | "pending"
+    | "needs-authentication"
+    | "disabled"
+    | "rejected"
+    | "cached"
+    | "not-configured"
+    | "error"
+    | "unknown";
+}
 /** A completed global package installation; loaded sessions are unchanged. */
 export interface ProviderPackageInstallResult {
   providerId: string;
@@ -337,7 +402,13 @@ export type SessionState = "starting" | "idle" | "running" | "ended";
 
 export type AgentEvent = (
   | { type: "session.turn.diff.updated"; sessionId: SessionId; turnId: TurnId; diff: string; truncated?: boolean }
-  | { type: "session.plan.updated"; sessionId: SessionId; planId: string; explanation?: string; steps: Array<{ step: string; status: "pending" | "inProgress" | "completed" }> }
+  | {
+      type: "session.plan.updated";
+      sessionId: SessionId;
+      planId: string;
+      explanation?: string;
+      steps: Array<{ step: string; status: "pending" | "inProgress" | "completed" }>;
+    }
   | { type: "workspace.changed" }
   | { type: "session.history.updated"; sessionId: SessionId }
   | { type: "provider.models.updated"; catalog: ProviderModelCatalog }
@@ -442,32 +513,45 @@ export type AgentEvent = (
       message: string;
       recoverable: boolean;
     }
-  ) & SessionEventMetadata;
+) &
+  SessionEventMetadata;
 
 export type UserInteraction = (
   | { kind: "text-input"; title?: string; message?: string; placeholder?: string }
-  | { kind: "choice"; title?: string; message?: string; options: string[]; /** Optional localized semantic hints aligned with options. */ optionHints?: string[] }
+  | {
+      kind: "choice";
+      title?: string;
+      message?: string;
+      options: string[];
+      /** Optional localized semantic hints aligned with options. */ optionHints?: string[];
+    }
   | { kind: "confirm"; title?: string; message: string }
   | { kind: "text-editor"; title?: string; message?: string; initialValue?: string }
-  | { kind: "form"; title?: string; message?: string; fields: Array<{
-      id: string;
-      label: string;
-      description?: string;
-      type: "text" | "number" | "boolean" | "choice" | "multi-choice";
-      required?: boolean;
-      defaultValue?: string | number | boolean | string[];
-      options?: Array<{ value: string; label: string; description?: string; preview?: string }>;
-      minLength?: number;
-      maxLength?: number;
-      minimum?: number;
-      maximum?: number;
-      integer?: boolean;
-      pattern?: string;
-      minItems?: number;
-      maxItems?: number;
-      format?: string;
-    }> }
-  | { kind: "url-consent"; title?: string; message?: string; url: string; host: string }) & { expiresAt?: string };
+  | {
+      kind: "form";
+      title?: string;
+      message?: string;
+      fields: Array<{
+        id: string;
+        label: string;
+        description?: string;
+        type: "text" | "number" | "boolean" | "choice" | "multi-choice";
+        required?: boolean;
+        defaultValue?: string | number | boolean | string[];
+        options?: Array<{ value: string; label: string; description?: string; preview?: string }>;
+        minLength?: number;
+        maxLength?: number;
+        minimum?: number;
+        maximum?: number;
+        integer?: boolean;
+        pattern?: string;
+        minItems?: number;
+        maxItems?: number;
+        format?: string;
+      }>;
+    }
+  | { kind: "url-consent"; title?: string; message?: string; url: string; host: string }
+) & { expiresAt?: string };
 
 export interface InteractionResponse {
   interactionId: string;

@@ -1,14 +1,27 @@
 import type { AcpSessionNotification } from "@agentclientprotocol/claude-agent-acp/dist/acp-subagents.js";
-import { client, CreateElicitationRequest, methods, ndJsonStream, PROTOCOL_VERSION, type ClientConnection, type CreateElicitationRequest as CreateElicitationRequestType, type CreateElicitationResponse, type RequestPermissionRequest, type RequestPermissionResponse, type SessionNotification } from "@agentclientprotocol/sdk";
+import {
+  client,
+  CreateElicitationRequest,
+  methods,
+  ndJsonStream,
+  PROTOCOL_VERSION,
+  type ClientConnection,
+  type CreateElicitationRequest as CreateElicitationRequestType,
+  type CreateElicitationResponse,
+  type RequestPermissionRequest,
+  type RequestPermissionResponse,
+  type SessionNotification,
+} from "@agentclientprotocol/sdk";
 import { execFile, spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { constants } from "node:fs";
 import { access, readFile, readdir, stat } from "node:fs/promises";
-import { delimiter, join } from "node:path";
+import { join } from "node:path";
 import { homedir } from "node:os";
 import { Readable, Writable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { providerEnvironmentWithSearchPath, providerSearchPath } from "../../provider-environment.js";
+import { providerEnvironmentWithSearchPath } from "../../provider-environment.js";
+import { resolveProviderExecutable, type ResolvedProviderExecutable } from "../../provider-executable.js";
 import { normalizeClaudeSubagentStream } from "./subagents.js";
 import { claudeSdkModelDiagnostic, isObject, withTimeout } from "./utils.js";
 
@@ -49,33 +62,49 @@ async function findClaudeExtensionExecutable(environment: NodeJS.ProcessEnv): Pr
 
     for (const extensionDirectory of extensionDirectories) {
       try {
-        const metadata = JSON.parse(await readFile(join(extensionDirectory, "package.json"), "utf8")) as ClaudeExtensionMetadata;
-        if (metadata.name !== "claude-code" || typeof metadata.publisher !== "string" || metadata.publisher.toLowerCase() !== "anthropic") continue;
+        const metadata = JSON.parse(
+          await readFile(join(extensionDirectory, "package.json"), "utf8"),
+        ) as ClaudeExtensionMetadata;
+        if (
+          metadata.name !== "claude-code" ||
+          typeof metadata.publisher !== "string" ||
+          metadata.publisher.toLowerCase() !== "anthropic"
+        )
+          continue;
         if (typeof metadata.version !== "string") continue;
         const executable = join(extensionDirectory, "resources", "native-binary", binaryName);
-        if (await isExecutableFile(executable)) candidates.push({ path: executable, version: metadata.version, rootOrder });
+        if (await isExecutableFile(executable))
+          candidates.push({ path: executable, version: metadata.version, rootOrder });
       } catch {
         // Ignore incomplete extension installs and continue with other editor versions.
       }
     }
   }
 
-  candidates.sort((left, right) => right.version.localeCompare(left.version, undefined, { numeric: true, sensitivity: "base" }) || left.rootOrder - right.rootOrder);
+  candidates.sort(
+    (left, right) =>
+      right.version.localeCompare(left.version, undefined, { numeric: true, sensitivity: "base" }) ||
+      left.rootOrder - right.rootOrder,
+  );
   return candidates[0]?.path;
 }
 
 export async function resolveClaudeExecutable(environment: NodeJS.ProcessEnv = process.env): Promise<string> {
-  const configured = environment.CLAUDE_CODE_EXECUTABLE || environment.VAGUS_CLAUDE_CODE_EXECUTABLE;
-  if (configured) return configured;
-  for (const directory of (await providerSearchPath(environment)).split(delimiter)) {
-    for (const name of process.platform === "win32" ? ["claude.exe", "claude.cmd", "claude"] : ["claude"]) {
-      const candidate = join(directory, name);
-      if (await isExecutableFile(candidate)) return candidate;
-    }
-  }
   const extensionExecutable = await findClaudeExtensionExecutable(environment);
-  if (extensionExecutable) return extensionExecutable;
-  throw new Error("找不到本机 Claude Code。请安装 Claude Code CLI，或通过 PATH、VS Code / Insiders / Cursor 扩展，或 CLAUDE_CODE_EXECUTABLE 指定其可执行文件。");
+  return (await resolveClaudeExecutableDetails(environment, extensionExecutable ? [extensionExecutable] : [])).path;
+}
+
+export async function resolveClaudeExecutableDetails(
+  environment: NodeJS.ProcessEnv = process.env,
+  candidatePaths: string[] = [],
+): Promise<ResolvedProviderExecutable> {
+  return resolveProviderExecutable({
+    displayName: "Claude Code",
+    commandNames: process.platform === "win32" ? ["claude.exe", "claude.cmd", "claude"] : ["claude"],
+    environmentVariables: ["CLAUDE_CODE_EXECUTABLE", "VAGUS_CLAUDE_CODE_EXECUTABLE"],
+    candidatePaths,
+    environment,
+  });
 }
 
 export function acpEntryPath(): string {
@@ -88,11 +117,22 @@ export async function openAcpConnection(
   onElicitation?: (params: CreateElicitationRequestType) => Promise<CreateElicitationResponse>,
   onElicitationComplete?: (elicitationId: string) => void,
   onDiagnostic?: (message: string) => void,
-): Promise<{ child: ChildProcessWithoutNullStreams; connection: ClientConnection; steeringSupported: boolean; sessionDeleteSupported: boolean }> {
-  const executable = await resolveClaudeExecutable();
+): Promise<{
+  child: ChildProcessWithoutNullStreams;
+  connection: ClientConnection;
+  steeringSupported: boolean;
+  sessionDeleteSupported: boolean;
+  executablePath: string;
+  executableSource: string;
+}> {
+  const executable = await resolveClaudeExecutableDetails();
   const child = spawn(process.execPath, [acpEntryPath()], {
     cwd: process.cwd(),
-    env: { ...await providerEnvironmentWithSearchPath(), CLAUDE_CODE_EXECUTABLE: executable, CLAUDE_AGENT_SDK_CLIENT_APP: "Vagus" },
+    env: {
+      ...(await providerEnvironmentWithSearchPath()),
+      CLAUDE_CODE_EXECUTABLE: executable.path,
+      CLAUDE_AGENT_SDK_CLIENT_APP: "Vagus",
+    },
     stdio: "pipe",
     windowsHide: true,
   });
@@ -113,38 +153,63 @@ export async function openAcpConnection(
     }
   });
   const app = client({ name: "Vagus" });
-  app.onRequest(methods.client.session.requestPermission, async ({ params }: { params: RequestPermissionRequest }) => onPermission(params));
-  if (onElicitation) app.onRequest(methods.client.elicitation.create, async ({ params }: { params: CreateElicitationRequest }) => onElicitation(params));
-  if (onElicitationComplete) app.onNotification(methods.client.elicitation.complete, ({ params }: { params: { elicitationId: string } }) => onElicitationComplete(params.elicitationId));
-  if (onUpdate) app.onNotification(methods.client.session.update, ({ params }: { params: SessionNotification }) => onUpdate(params as AcpSessionNotification));
+  app.onRequest(methods.client.session.requestPermission, async ({ params }: { params: RequestPermissionRequest }) =>
+    onPermission(params),
+  );
+  if (onElicitation)
+    app.onRequest(methods.client.elicitation.create, async ({ params }: { params: CreateElicitationRequest }) =>
+      onElicitation(params),
+    );
+  if (onElicitationComplete)
+    app.onNotification(methods.client.elicitation.complete, ({ params }: { params: { elicitationId: string } }) =>
+      onElicitationComplete(params.elicitationId),
+    );
+  if (onUpdate)
+    app.onNotification(methods.client.session.update, ({ params }: { params: SessionNotification }) =>
+      onUpdate(params as AcpSessionNotification),
+    );
   const stream = ndJsonStream(
     Writable.toWeb(child.stdin) as WritableStream<Uint8Array>,
     Readable.toWeb(normalizeClaudeSubagentStream(child.stdout)) as ReadableStream<Uint8Array>,
   );
   const connection = app.connect(stream);
   try {
-    const initialized = await withTimeout(connection.agent.request(methods.agent.initialize, {
-      protocolVersion: PROTOCOL_VERSION,
-      clientInfo: { name: "Vagus", version: "0.1.0" },
-      clientCapabilities: {
-        plan: {},
-        session: { compaction: {} },
-        // The Claude ACP bridge negotiates native child sessions, but currently
-        // emits two pre-standardization lifecycle tags. The incoming NDJSON
-        // boundary normalizes those to ACP's validated `subagent_update` form.
-        subagents: {},
-        ...(onElicitation ? { elicitation: { form: {}, url: {} } } : {}),
-        // claude-agent-acp uses this ACP v1 extension to report shell output
-        // as incremental terminal chunks rather than hiding it in rawOutput.
-        _meta: { terminal_output_delta: true },
-      },
-    }), "Claude ACP 初始化超时");
+    const initialized = await withTimeout(
+      connection.agent.request(methods.agent.initialize, {
+        protocolVersion: PROTOCOL_VERSION,
+        clientInfo: { name: "Vagus", version: "0.1.0" },
+        clientCapabilities: {
+          plan: {},
+          session: { compaction: {} },
+          // The Claude ACP bridge negotiates native child sessions, but currently
+          // emits two pre-standardization lifecycle tags. The incoming NDJSON
+          // boundary normalizes those to ACP's validated `subagent_update` form.
+          subagents: {},
+          ...(onElicitation ? { elicitation: { form: {}, url: {} } } : {}),
+          // claude-agent-acp uses this ACP v1 extension to report shell output
+          // as incremental terminal chunks rather than hiding it in rawOutput.
+          _meta: { terminal_output_delta: true },
+        },
+      }),
+      "Claude ACP 初始化超时",
+    );
     const meta = isObject(initialized) && isObject(initialized._meta) ? initialized._meta : null;
     const steeringSupported = Boolean(meta && isObject(meta.steering) && meta.steering.supported === true);
-    const agentCapabilities = isObject(initialized) && isObject(initialized.agentCapabilities) ? initialized.agentCapabilities : null;
-    const sessionCapabilities = agentCapabilities && isObject(agentCapabilities.sessionCapabilities) ? agentCapabilities.sessionCapabilities : null;
+    const agentCapabilities =
+      isObject(initialized) && isObject(initialized.agentCapabilities) ? initialized.agentCapabilities : null;
+    const sessionCapabilities =
+      agentCapabilities && isObject(agentCapabilities.sessionCapabilities)
+        ? agentCapabilities.sessionCapabilities
+        : null;
     const sessionDeleteSupported = Boolean(sessionCapabilities && isObject(sessionCapabilities.delete));
-    return { child, connection, steeringSupported, sessionDeleteSupported };
+    return {
+      child,
+      connection,
+      steeringSupported,
+      sessionDeleteSupported,
+      executablePath: executable.path,
+      executableSource: executable.source,
+    };
   } catch (error) {
     connection.close(error);
     child.kill();

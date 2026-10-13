@@ -13,9 +13,20 @@ export interface ProviderCatalogServicesContract {
   refreshProviderModels(providerId: string): Promise<ProviderModelCatalog>;
 }
 
-type ProviderCatalogServicesDependencies = Pick<HostContext, "broadcast" | "providerEnabled" | "providerModelCatalogs" | "providerModelRefreshes" | "providerModelsFile" | "providerSettingsFile" | "providers">;
+type ProviderCatalogServicesDependencies = Pick<
+  HostContext,
+  | "broadcast"
+  | "providerEnabled"
+  | "providerModelCatalogs"
+  | "providerModelRefreshes"
+  | "providerModelsFile"
+  | "providerSettingsFile"
+  | "providers"
+>;
 
-export function createProviderCatalogServices(ctx: ProviderCatalogServicesDependencies): ProviderCatalogServicesContract {
+export function createProviderCatalogServices(
+  ctx: ProviderCatalogServicesDependencies,
+): ProviderCatalogServicesContract {
   async function loadProviderModelCache(): Promise<void> {
     try {
       const parsed: unknown = JSON.parse(await readFile(ctx.providerModelsFile, "utf8"));
@@ -28,24 +39,52 @@ export function createProviderCatalogServices(ctx: ProviderCatalogServicesDepend
           !Array.isArray(catalog.models) ||
           typeof catalog.fetchedAt !== "string" ||
           !(catalog.currentModelId === null || typeof catalog.currentModelId === "string")
-        ) continue;
+        )
+          continue;
         ctx.providerModelCatalogs.set(providerId, {
           providerId,
-          models: catalog.models.filter((model) => model && typeof model.id === "string" && typeof model.name === "string" && typeof model.source === "string").map((model) => ({
-            ...model,
-            ...(Array.isArray(model.thinkingLevels) ? { thinkingLevels: model.thinkingLevels.filter((level) => typeof level === "string") } : {}),
-          })),
+          models: catalog.models
+            .filter(
+              (model) =>
+                model &&
+                typeof model.id === "string" &&
+                typeof model.name === "string" &&
+                typeof model.source === "string",
+            )
+            .map((model) => ({
+              ...model,
+              ...(Array.isArray(model.thinkingLevels)
+                ? { thinkingLevels: model.thinkingLevels.filter((level) => typeof level === "string") }
+                : {}),
+            })),
           currentModelId: catalog.currentModelId,
-          ...(typeof catalog.currentThinkingLevel === "string" || catalog.currentThinkingLevel === null ? { currentThinkingLevel: catalog.currentThinkingLevel } : {}),
-          ...(typeof catalog.currentModeId === "string" || catalog.currentModeId === null ? { currentModeId: catalog.currentModeId } : {}),
-          ...(Array.isArray(catalog.availableModes) ? { availableModes: catalog.availableModes.filter((mode) => mode && typeof mode.id === "string" && typeof mode.name === "string").map((mode) => ({ id: mode.id, name: mode.name, ...(typeof mode.description === "string" ? { description: mode.description } : {}) })) } : {}),
+          ...(typeof catalog.currentThinkingLevel === "string" || catalog.currentThinkingLevel === null
+            ? { currentThinkingLevel: catalog.currentThinkingLevel }
+            : {}),
+          ...(typeof catalog.currentModeId === "string" || catalog.currentModeId === null
+            ? { currentModeId: catalog.currentModeId }
+            : {}),
+          ...(Array.isArray(catalog.availableModes)
+            ? {
+                availableModes: catalog.availableModes
+                  .filter((mode) => mode && typeof mode.id === "string" && typeof mode.name === "string")
+                  .map((mode) => ({
+                    id: mode.id,
+                    name: mode.name,
+                    ...(typeof mode.description === "string" ? { description: mode.description } : {}),
+                  })),
+              }
+            : {}),
+          ...(typeof catalog.executablePath === "string" ? { executablePath: catalog.executablePath } : {}),
+          ...(typeof catalog.executableSource === "string" ? { executableSource: catalog.executableSource } : {}),
           fetchedAt: catalog.fetchedAt,
           status: "ready",
           stale: true,
         });
       }
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") process.stderr.write(`Vagus provider cache read failed: ${String(error)}\n`);
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT")
+        process.stderr.write(`Vagus provider cache read failed: ${String(error)}\n`);
     }
   }
 
@@ -57,7 +96,8 @@ export function createProviderCatalogServices(ctx: ProviderCatalogServicesDepend
         if (ctx.providers.has(providerId) && typeof enabled === "boolean") ctx.providerEnabled.set(providerId, enabled);
       }
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") process.stderr.write(`Vagus provider settings read failed: ${String(error)}\n`);
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT")
+        process.stderr.write(`Vagus provider settings read failed: ${String(error)}\n`);
     }
   }
 
@@ -114,7 +154,15 @@ export function createProviderCatalogServices(ctx: ProviderCatalogServicesDepend
         const previous = ctx.providerModelCatalogs.get(providerId);
         const catalog: ProviderModelCatalog = previous
           ? { ...previous, status: "ready", stale: true, error: message }
-          : { providerId, models: [], currentModelId: null, fetchedAt: "", status: "error", stale: true, error: message };
+          : {
+              providerId,
+              models: [],
+              currentModelId: null,
+              fetchedAt: "",
+              status: "error",
+              stale: true,
+              error: message,
+            };
         publishProviderModelCatalog(catalog);
         if (previous) await persistProviderModelCache().catch(() => undefined);
         throw reason;
@@ -123,5 +171,14 @@ export function createProviderCatalogServices(ctx: ProviderCatalogServicesDepend
     ctx.providerModelRefreshes.set(providerId, refresh);
     return refresh;
   }
-  return { loadProviderModelCache, loadProviderSettings, persistProviderSettings, providerHealth, publicProviders, persistProviderModelCache, publishProviderModelCatalog, refreshProviderModels };
+  return {
+    loadProviderModelCache,
+    loadProviderSettings,
+    persistProviderSettings,
+    providerHealth,
+    publicProviders,
+    persistProviderModelCache,
+    publishProviderModelCatalog,
+    refreshProviderModels,
+  };
 }

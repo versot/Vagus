@@ -28,7 +28,7 @@ The desktop package does not implement Agent adapters or own the shared UI. The 
 - Node.js 22.13 or later and npm. On macOS, the app also searches the interactive login shell for Node.js when resolving it for a GUI launch.
 - Rust stable and the platform-specific native build tools.
 - On Windows, MSVC C++ build tools, Windows SDK, and Microsoft Edge WebView2 Runtime.
-- Agent CLIs and their account configuration, installed separately by the user.
+- Agent CLIs and their account configuration, installed separately by the user. The Host searches its inherited PATH, the macOS login-shell PATH, common user install locations, and an available platform executable index when resolving agent commands.
 
 A configured build target is not, by itself, a claim of verified platform compatibility.
 

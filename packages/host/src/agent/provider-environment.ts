@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
-import { delimiter } from "node:path";
+import { delimiter, join } from "node:path";
+import { homedir } from "node:os";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
@@ -26,13 +27,57 @@ function macOSLoginPath(environment: NodeJS.ProcessEnv): Promise<string | null> 
   return loginPath;
 }
 
-/** Find user-installed CLIs when a macOS GUI launch has a smaller PATH than Terminal. */
-export async function providerSearchPath(environment: NodeJS.ProcessEnv = process.env): Promise<string> {
+function commonExecutableDirectories(environment: NodeJS.ProcessEnv): string[] {
+  const home = environment.USERPROFILE || environment.HOME || homedir();
+  const appData = environment.APPDATA || join(home, "AppData", "Roaming");
+  const localAppData = environment.LOCALAPPDATA || join(home, "AppData", "Local");
+  return [
+    join(home, ".local", "bin"),
+    join(home, ".local", "share", "pnpm"),
+    join(home, ".npm-global", "bin"),
+    join(home, ".bun", "bin"),
+    join(home, ".volta", "bin"),
+    join(home, ".cargo", "bin"),
+    join(home, ".nvm", "current", "bin"),
+    join(appData, "npm"),
+    join(localAppData, "pnpm"),
+    join(localAppData, "Programs", "OpenAI", "Codex", "bin"),
+    join(home, "Library", "pnpm"),
+    join(home, "Library", "Application Support", "mise", "shims"),
+    "/opt/homebrew/bin",
+    "/usr/local/bin",
+    "/opt/local/bin",
+    "/usr/bin",
+    "/bin",
+  ];
+}
+
+/** Find user-installed CLIs outside a desktop app's inherited PATH. */
+export async function providerSearchPaths(
+  environment: NodeJS.ProcessEnv = process.env,
+): Promise<Array<{ directory: string; source: "environment" | "login-shell" | "common-location" }>> {
   const inherited = environment.PATH ?? environment.Path ?? "";
-  if (process.platform !== "darwin") return inherited;
-  const shellPath = await macOSLoginPath(environment);
-  if (!shellPath) return inherited;
-  return [...new Set([...shellPath.split(delimiter), ...inherited.split(delimiter)].filter(Boolean))].join(delimiter);
+  const paths: Array<{ directory: string; source: "environment" | "login-shell" | "common-location" }> = [];
+  const seen = new Set<string>();
+  const add = (directory: string, source: "environment" | "login-shell" | "common-location") => {
+    const trimmed = directory.trim().replace(/^"|"$/gu, "");
+    if (!trimmed) return;
+    const normalized = process.platform === "win32" ? trimmed.toLowerCase() : trimmed;
+    if (seen.has(normalized)) return;
+    seen.add(normalized);
+    paths.push({ directory: trimmed, source });
+  };
+  for (const directory of inherited.split(delimiter)) add(directory, "environment");
+  if (process.platform === "darwin") {
+    const shellPath = await macOSLoginPath(environment);
+    for (const directory of (shellPath ?? "").split(delimiter)) add(directory, "login-shell");
+  }
+  for (const directory of commonExecutableDirectories(environment)) add(directory, "common-location");
+  return paths;
+}
+
+export async function providerSearchPath(environment: NodeJS.ProcessEnv = process.env): Promise<string> {
+  return (await providerSearchPaths(environment)).map(({ directory }) => directory).join(delimiter);
 }
 
 /** Desktop bridge credentials belong to the Host, never to provider/package workers. */

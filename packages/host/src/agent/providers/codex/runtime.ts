@@ -1,45 +1,41 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
-import { delimiter, join } from "node:path";
+import { join } from "node:path";
 import { StringDecoder } from "node:string_decoder";
-import { providerEnvironmentWithSearchPath, providerSearchPath } from "../../provider-environment.js";
+import { providerEnvironmentWithSearchPath } from "../../provider-environment.js";
+import { resolveProviderExecutable } from "../../provider-executable.js";
 import { type PendingRpc, type RpcId } from "./types.js";
 import { isRecord, safeError } from "./utils.js";
 
 export async function resolveCodexExecutable(environment: NodeJS.ProcessEnv = process.env): Promise<string> {
-  const explicit = environment.VAGUS_CODEX_EXECUTABLE?.trim();
-  if (explicit) return explicit;
-  const searchPath = await providerSearchPath(environment);
-  const names = process.platform === "win32" ? ["codex.exe", "codex"] : ["codex"];
-  for (const directory of searchPath.split(delimiter).filter(Boolean)) {
-    for (const name of names) {
-      const candidate = join(directory.replace(/^"|"$/gu, ""), name);
-      if (existsSync(candidate)) return candidate;
-    }
-  }
+  return (await resolveCodexExecutableDetails(environment)).path;
+}
+
+export async function resolveCodexExecutableDetails(environment: NodeJS.ProcessEnv = process.env) {
+  const candidatePaths: string[] = [];
   if (process.platform === "win32" && environment.LOCALAPPDATA) {
     const installRoot = join(environment.LOCALAPPDATA, "OpenAI", "Codex", "bin");
+    const { readdir } = await import("node:fs/promises");
     try {
-      const versions = readdirSync(installRoot).sort().reverse();
-      for (const version of versions) {
-        const candidate = join(installRoot, version, "codex.exe");
-        if (existsSync(candidate)) return candidate;
-      }
-    } catch { /* optional versioned desktop install */ }
+      for (const version of (await readdir(installRoot)).sort().reverse())
+        candidatePaths.push(join(installRoot, version, "codex.exe"));
+    } catch {
+      /* optional versioned desktop install */
+    }
   }
-  return process.platform === "win32" ? "codex.exe" : "codex";
+  return resolveProviderExecutable({
+    displayName: "Codex CLI",
+    commandNames: process.platform === "win32" ? ["codex.exe", "codex"] : ["codex"],
+    environmentVariables: ["VAGUS_CODEX_EXECUTABLE"],
+    candidatePaths,
+    environment,
+  });
 }
 
 export function codexAppServerArgs(platform = process.platform): string[] {
   // MXC is Codex's recommended Windows sandbox and does not rely on the
   // elevated legacy setup helper. That helper can fail when a configured MCP
   // runtime is already open (Windows sharing violation while refreshing ACLs).
-  return [
-    ...(platform === "win32" ? ["-c", "windows.sandbox=mxc"] : []),
-    "app-server",
-    "--listen",
-    "stdio://",
-  ];
+  return [...(platform === "win32" ? ["-c", "windows.sandbox=mxc"] : []), "app-server", "--listen", "stdio://"];
 }
 
 export class CodexAppServer {
@@ -48,14 +44,26 @@ export class CodexAppServer {
   private buffered = "";
   private nextId = 1;
   private pending = new Map<RpcId, PendingRpc>();
-  private onNotification: (method: string, params: unknown) => void = () => { };
-  private onServerRequest: (id: RpcId, method: string, params: unknown) => void = () => { };
-  private onExit: (error: Error) => void = () => { };
+  private onNotification: (method: string, params: unknown) => void = () => {};
+  private onServerRequest: (id: RpcId, method: string, params: unknown) => void = () => {};
+  private onExit: (error: Error) => void = () => {};
   private closed = false;
 
-  constructor(private readonly executable: string, private readonly cwd: string) { }
+  constructor(
+    private readonly executable: string,
+    private readonly cwd: string,
+    readonly executableSource = "configured executable",
+  ) {}
 
-  setHandlers(handlers: { notification: (method: string, params: unknown) => void; serverRequest: (id: RpcId, method: string, params: unknown) => void; exit: (error: Error) => void }): void {
+  get executablePath(): string {
+    return this.executable;
+  }
+
+  setHandlers(handlers: {
+    notification: (method: string, params: unknown) => void;
+    serverRequest: (id: RpcId, method: string, params: unknown) => void;
+    exit: (error: Error) => void;
+  }): void {
     this.onNotification = handlers.notification;
     this.onServerRequest = handlers.serverRequest;
     this.onExit = handlers.exit;
@@ -69,13 +77,20 @@ export class CodexAppServer {
       stdio: ["pipe", "pipe", "pipe"],
     });
     this.child.stdout.on("data", (chunk: Buffer) => this.consume(chunk));
-    this.child.stderr.on("data", () => { /* CLI diagnostics may contain local paths or sensitive configuration. */ });
+    this.child.stderr.on("data", () => {
+      /* CLI diagnostics may contain local paths or sensitive configuration. */
+    });
     this.child.stdin.on("error", (error) => this.fail(safeError(error)));
     this.child.stdout.on("error", (error) => this.fail(safeError(error)));
     this.child.stderr.on("error", (error) => this.fail(safeError(error)));
     this.child.once("error", (error) => this.fail(safeError(error)));
-    this.child.once("exit", (code, signal) => this.fail(new Error(`Codex app-server 已退出（${signal ?? code ?? "unknown"}）`)));
-    await this.request("initialize", { clientInfo: { name: "vagus", title: "Vagus", version: "0.1.0" }, capabilities: { experimentalApi: true, requestAttestation: false } });
+    this.child.once("exit", (code, signal) =>
+      this.fail(new Error(`Codex app-server 已退出（${signal ?? code ?? "unknown"}）`)),
+    );
+    await this.request("initialize", {
+      clientInfo: { name: "vagus", title: "Vagus", version: "0.1.0" },
+      capabilities: { experimentalApi: true, requestAttestation: false },
+    });
     this.notify("initialized", {});
   }
 
@@ -92,11 +107,17 @@ export class CodexAppServer {
     });
   }
 
-  notify(method: string, params: unknown): void { this.write({ jsonrpc: "2.0", method, params }); }
+  notify(method: string, params: unknown): void {
+    this.write({ jsonrpc: "2.0", method, params });
+  }
 
-  reply(id: RpcId, result: unknown): void { this.write({ jsonrpc: "2.0", id, result }); }
+  reply(id: RpcId, result: unknown): void {
+    this.write({ jsonrpc: "2.0", id, result });
+  }
 
-  reject(id: RpcId, code: number, message: string): void { this.write({ jsonrpc: "2.0", id, error: { code, message } }); }
+  reject(id: RpcId, code: number, message: string): void {
+    this.write({ jsonrpc: "2.0", id, error: { code, message } });
+  }
 
   async close(): Promise<void> {
     if (this.closed) return;
@@ -110,7 +131,10 @@ export class CodexAppServer {
     if (child && child.exitCode === null && child.signalCode === null) {
       child.stdin.end();
       child.kill("SIGKILL");
-      await Promise.race([new Promise<void>((resolve) => child.once("close", () => resolve())), new Promise<void>((resolve) => setTimeout(resolve, 1500))]);
+      await Promise.race([
+        new Promise<void>((resolve) => child.once("close", () => resolve())),
+        new Promise<void>((resolve) => setTimeout(resolve, 1500)),
+      ]);
       child.stdin.destroy();
       child.stdout.destroy();
       child.stderr.destroy();
@@ -132,18 +156,28 @@ export class CodexAppServer {
       this.buffered = this.buffered.slice(newline + 1);
       if (!line) continue;
       let message: unknown;
-      try { message = JSON.parse(line); } catch { continue; }
+      try {
+        message = JSON.parse(line);
+      } catch {
+        continue;
+      }
       if (!isRecord(message)) continue;
       if ((typeof message.id === "string" || typeof message.id === "number") && typeof message.method === "string") {
         this.onServerRequest(message.id, message.method, message.params);
       } else if (typeof message.method === "string") {
         this.onNotification(message.method, message.params);
-      } else if ((typeof message.id === "string" || typeof message.id === "number") && ("result" in message || "error" in message)) {
+      } else if (
+        (typeof message.id === "string" || typeof message.id === "number") &&
+        ("result" in message || "error" in message)
+      ) {
         const pending = this.pending.get(message.id);
         if (!pending) continue;
         this.pending.delete(message.id);
         clearTimeout(pending.timer);
-        if (isRecord(message.error)) pending.reject(new Error(typeof message.error.message === "string" ? message.error.message : "Codex RPC failed"));
+        if (isRecord(message.error))
+          pending.reject(
+            new Error(typeof message.error.message === "string" ? message.error.message : "Codex RPC failed"),
+          );
         else pending.resolve(message.result);
       }
     }
@@ -152,7 +186,10 @@ export class CodexAppServer {
   private fail(error: Error): void {
     if (this.closed) return;
     this.closed = true;
-    for (const pending of this.pending.values()) { clearTimeout(pending.timer); pending.reject(error); }
+    for (const pending of this.pending.values()) {
+      clearTimeout(pending.timer);
+      pending.reject(error);
+    }
     this.pending.clear();
     this.child = null;
     this.onExit(error);

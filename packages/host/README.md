@@ -2,7 +2,7 @@
 
 The Node.js service that manages Vagus projects, sessions, providers, and local workspace operations.
 
-The Host is a separate process from the desktop UI. In the current desktop product, Tauri starts and supervises it locally; the UI communicates with it through the authenticated protocol and typed client. 
+The Host is a separate process from the desktop UI. In the current desktop product, Tauri starts and supervises it locally; the UI communicates with it through the authenticated protocol and typed client.
 
 ## Responsibilities
 
@@ -26,8 +26,8 @@ The Host is a separate process from the desktop UI. In the current desktop produ
 
 - Node.js 22.13 or later; Node.js 24 is recommended.
 - Agent CLIs and credentials are installed and configured by the user.
+- Provider executable discovery checks the Host's inherited `PATH`, the macOS login-shell `PATH`, common per-user install locations, and the platform's available executable index. Provider-specific `VAGUS_*_EXECUTABLE` variables can select a nonstandard CLI path; the Settings catalog shows the resolved path after a successful refresh.
 - The desktop-managed Host requires an authentication token and binds to loopback. Do not add an unauthenticated mode.
-
 
 ## Development
 
