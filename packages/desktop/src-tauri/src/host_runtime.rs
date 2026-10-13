@@ -44,6 +44,36 @@ pub(crate) fn host_entry(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(entry)
 }
 
+fn parse_login_shell_node(output: &[u8]) -> Option<PathBuf> {
+    String::from_utf8_lossy(output)
+        .lines()
+        .rev()
+        .map(str::trim)
+        .find(|line| line.starts_with('/'))
+        .map(PathBuf::from)
+}
+
+#[cfg(target_os = "macos")]
+fn node_from_login_shell() -> Option<PathBuf> {
+    let shell = std::env::var_os("SHELL").unwrap_or_else(|| "/bin/zsh".into());
+    let output = Command::new(shell).args(["-lic", "command -v node"]).output().ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    parse_login_shell_node(&output.stdout).filter(|path| path.is_file())
+}
+
+fn node_command() -> PathBuf {
+    if let Some(configured) = std::env::var_os("VAGUS_NODE_PATH") {
+        return PathBuf::from(configured);
+    }
+    #[cfg(target_os = "macos")]
+    if let Some(node) = node_from_login_shell() {
+        return node;
+    }
+    PathBuf::from("node")
+}
+
 pub(crate) fn run_host(app: &AppHandle, token: &str) -> Result<Child, String> {
     let entry = host_entry(app)?;
     let host_address = "127.0.0.1:4317";
@@ -55,7 +85,7 @@ pub(crate) fn run_host(app: &AppHandle, token: &str) -> Result<Child, String> {
     apply_pending_data_migration(app, &mut settings)?;
     let data_dir = resolved_data_directory(app, &settings)?;
     std::fs::create_dir_all(&data_dir).map_err(|error| error.to_string())?;
-    let node = std::env::var_os("VAGUS_NODE_PATH").unwrap_or_else(|| "node".into());
+    let node = node_command();
     let mut command = Command::new(&node);
     let host_log_path = data_dir.join("host.log");
     let host_log = OpenOptions::new()
@@ -109,7 +139,11 @@ pub(crate) fn run_host(app: &AppHandle, token: &str) -> Result<Child, String> {
         command.creation_flags(0x08000000);
     }
     let mut child = command.spawn().map_err(|error| {
-        format!("无法启动本机 Pi Host：{error}。请确认 Node.js 已安装且位于 PATH。")
+        #[cfg(target_os = "macos")]
+        let hint = "请确认 Node.js 22.13+ 已安装，并可通过登录 shell 的 node 命令找到；也可设置 VAGUS_NODE_PATH";
+        #[cfg(not(target_os = "macos"))]
+        let hint = "请确认 Node.js 22.13+ 已安装且位于 PATH，或设置 VAGUS_NODE_PATH";
+        format!("无法启动本机 Pi Host：{error}。{hint}。")
     })?;
     let mut ready = false;
     // The first launch can import a large legacy workspace before listening.
@@ -147,4 +181,25 @@ pub(crate) fn run_host(app: &AppHandle, token: &str) -> Result<Child, String> {
         return Err("Pi Host 启动超时。请确认 Node.js 版本不低于 22.13、端口 4317 未被占用，并查看 Host 日志中的历史迁移错误。".to_string());
     }
     Ok(child)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_login_shell_node;
+    use std::path::PathBuf;
+
+    #[test]
+    fn parses_node_path_after_login_shell_startup_output() {
+        let output = b"shell startup message\n/opt/homebrew/bin/node\n";
+
+        assert_eq!(
+            parse_login_shell_node(output),
+            Some(PathBuf::from("/opt/homebrew/bin/node"))
+        );
+    }
+
+    #[test]
+    fn rejects_a_command_name_without_an_absolute_path() {
+        assert_eq!(parse_login_shell_node(b"node\n"), None);
+    }
 }

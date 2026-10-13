@@ -92,7 +92,7 @@ Vagus is in public Beta. The first release provides installers for Windows x64, 
 
 Download the first public test build from [Vagus v0.1.0-beta.1](https://github.com/versot/Vagus/releases/tag/v0.1.0-beta.1). Each GitHub pre-release lists its installers, release notes, and known issues. Back up important data before testing, and include your Vagus version and operating system when reporting a problem.
 
-The desktop app uses the local Node.js runtime to run Vagus Host. Node.js 22.13 or later is required. Users install, sign in to, and configure the agent CLIs they need; installers do not bundle Node.js or agent CLIs.
+The desktop app uses the local Node.js runtime to run Vagus Host. Node.js 22.13 or later is required. On macOS, Vagus also checks the user's interactive login shell so it can find Node.js when launched from Finder or the Dock. Users install, sign in to, and configure the agent CLIs they need; installers do not bundle Node.js or agent CLIs.
 
 Each version has its own user-facing release note under [`releases/`](releases/). The same Markdown file is used as the GitHub Release description.
 
