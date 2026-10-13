@@ -1,6 +1,6 @@
 [package]
 name = "vagus-desktop"
-version = "0.1.0-beta.1"
+version = "0.1.0-beta.2"
 description = "Vagus desktop application"
 authors = ["Vagus contributors"]
 edition = "2021"

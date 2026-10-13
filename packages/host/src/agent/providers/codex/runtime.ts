@@ -2,14 +2,14 @@ import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { delimiter, join } from "node:path";
 import { StringDecoder } from "node:string_decoder";
-import { providerEnvironment } from "../../provider-environment.js";
+import { providerEnvironmentWithSearchPath, providerSearchPath } from "../../provider-environment.js";
 import { type PendingRpc, type RpcId } from "./types.js";
 import { isRecord, safeError } from "./utils.js";
 
-export function resolveCodexExecutable(environment: NodeJS.ProcessEnv = process.env): string {
+export async function resolveCodexExecutable(environment: NodeJS.ProcessEnv = process.env): Promise<string> {
   const explicit = environment.VAGUS_CODEX_EXECUTABLE?.trim();
   if (explicit) return explicit;
-  const searchPath = environment.PATH ?? environment.Path ?? "";
+  const searchPath = await providerSearchPath(environment);
   const names = process.platform === "win32" ? ["codex.exe", "codex"] : ["codex"];
   for (const directory of searchPath.split(delimiter).filter(Boolean)) {
     for (const name of names) {
@@ -64,7 +64,7 @@ export class CodexAppServer {
   async start(): Promise<void> {
     this.child = spawn(this.executable, codexAppServerArgs(), {
       cwd: this.cwd,
-      env: providerEnvironment(),
+      env: await providerEnvironmentWithSearchPath(),
       windowsHide: true,
       stdio: ["pipe", "pipe", "pipe"],
     });

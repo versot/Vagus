@@ -19,6 +19,7 @@ The desktop package does not implement Agent adapters or own the shared UI. The 
 - `src-tauri/src/lib.rs` — application setup and native command registration.
 - `src-tauri/src/host_runtime.rs`, `host_supervisor.rs` — Host launch and lifecycle supervision.
 - `src-tauri/src/settings.rs`, `windows.rs`, `tray.rs` — settings, windows, and tray integration.
+- `src-tauri/tauri.macos.conf.json`, `tauri.windows.conf.json` — platform-specific native window configuration.
 - `src-tauri/src/browser.rs`, `filesystem.rs`, `terminal.rs` — isolated browser, constrained file access, and PTY operations.
 - `src-tauri/tauri.conf.json` — frontend build hooks, bundled Host resources, icons, and installer configuration.
 
@@ -31,6 +32,8 @@ The desktop package does not implement Agent adapters or own the shared UI. The 
 - Agent CLIs and their account configuration, installed separately by the user.
 
 A configured build target is not, by itself, a claim of verified platform compatibility.
+
+The macOS desktop window overlays its native traffic-light controls on the app toolbar. Windows keeps the custom title bar and window buttons.
 
 ## Development and packaging
 

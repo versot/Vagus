@@ -1,27 +1,81 @@
 import type { AcpSessionNotification } from "@agentclientprotocol/claude-agent-acp/dist/acp-subagents.js";
 import { client, CreateElicitationRequest, methods, ndJsonStream, PROTOCOL_VERSION, type ClientConnection, type CreateElicitationRequest as CreateElicitationRequestType, type CreateElicitationResponse, type RequestPermissionRequest, type RequestPermissionResponse, type SessionNotification } from "@agentclientprotocol/sdk";
 import { execFile, spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { existsSync } from "node:fs";
+import { constants } from "node:fs";
+import { access, readFile, readdir, stat } from "node:fs/promises";
 import { delimiter, join } from "node:path";
+import { homedir } from "node:os";
 import { Readable, Writable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { providerEnvironment } from "../../provider-environment.js";
+import { providerEnvironmentWithSearchPath, providerSearchPath } from "../../provider-environment.js";
 import { normalizeClaudeSubagentStream } from "./subagents.js";
 import { claudeSdkModelDiagnostic, isObject, withTimeout } from "./utils.js";
 
 export const execFileAsync = promisify(execFile);
 
-export function resolveClaudeExecutable(): string {
-  const configured = process.env.CLAUDE_CODE_EXECUTABLE || process.env.VAGUS_CLAUDE_CODE_EXECUTABLE;
-  if (configured) return configured;
-  for (const directory of (process.env.PATH ?? "").split(delimiter)) {
-    for (const name of process.platform === "win32" ? ["claude.exe", "claude.cmd", "claude"] : ["claude"]) {
-      const candidate = join(directory, name);
-      if (existsSync(candidate)) return candidate;
+type ClaudeExtensionMetadata = { name?: unknown; publisher?: unknown; version?: unknown };
+
+async function isExecutableFile(path: string): Promise<boolean> {
+  try {
+    const info = await stat(path);
+    if (!info.isFile()) return false;
+    await access(path, process.platform === "win32" ? constants.F_OK : constants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function findClaudeExtensionExecutable(environment: NodeJS.ProcessEnv): Promise<string | undefined> {
+  const home = environment.USERPROFILE || environment.HOME || homedir();
+  const editorExtensionRoots = [
+    join(home, ".vscode", "extensions"),
+    join(home, ".vscode-insiders", "extensions"),
+    join(home, ".cursor", "extensions"),
+  ];
+  const binaryName = process.platform === "win32" ? "claude.exe" : "claude";
+  const candidates: Array<{ path: string; version: string; rootOrder: number }> = [];
+
+  for (const [rootOrder, extensionsRoot] of editorExtensionRoots.entries()) {
+    let extensionDirectories: string[];
+    try {
+      extensionDirectories = (await readdir(extensionsRoot, { withFileTypes: true }))
+        .filter((entry) => entry.isDirectory() && entry.name.toLowerCase().startsWith("anthropic.claude-code-"))
+        .map((entry) => join(extensionsRoot, entry.name));
+    } catch {
+      continue;
+    }
+
+    for (const extensionDirectory of extensionDirectories) {
+      try {
+        const metadata = JSON.parse(await readFile(join(extensionDirectory, "package.json"), "utf8")) as ClaudeExtensionMetadata;
+        if (metadata.name !== "claude-code" || typeof metadata.publisher !== "string" || metadata.publisher.toLowerCase() !== "anthropic") continue;
+        if (typeof metadata.version !== "string") continue;
+        const executable = join(extensionDirectory, "resources", "native-binary", binaryName);
+        if (await isExecutableFile(executable)) candidates.push({ path: executable, version: metadata.version, rootOrder });
+      } catch {
+        // Ignore incomplete extension installs and continue with other editor versions.
+      }
     }
   }
-  throw new Error("找不到本机 Claude Code。请先安装 Claude Code，并确保 claude 命令在 PATH 中，或设置 CLAUDE_CODE_EXECUTABLE。");
+
+  candidates.sort((left, right) => right.version.localeCompare(left.version, undefined, { numeric: true, sensitivity: "base" }) || left.rootOrder - right.rootOrder);
+  return candidates[0]?.path;
+}
+
+export async function resolveClaudeExecutable(environment: NodeJS.ProcessEnv = process.env): Promise<string> {
+  const configured = environment.CLAUDE_CODE_EXECUTABLE || environment.VAGUS_CLAUDE_CODE_EXECUTABLE;
+  if (configured) return configured;
+  for (const directory of (await providerSearchPath(environment)).split(delimiter)) {
+    for (const name of process.platform === "win32" ? ["claude.exe", "claude.cmd", "claude"] : ["claude"]) {
+      const candidate = join(directory, name);
+      if (await isExecutableFile(candidate)) return candidate;
+    }
+  }
+  const extensionExecutable = await findClaudeExtensionExecutable(environment);
+  if (extensionExecutable) return extensionExecutable;
+  throw new Error("找不到本机 Claude Code。请安装 Claude Code CLI，或通过 PATH、VS Code / Insiders / Cursor 扩展，或 CLAUDE_CODE_EXECUTABLE 指定其可执行文件。");
 }
 
 export function acpEntryPath(): string {
@@ -35,10 +89,10 @@ export async function openAcpConnection(
   onElicitationComplete?: (elicitationId: string) => void,
   onDiagnostic?: (message: string) => void,
 ): Promise<{ child: ChildProcessWithoutNullStreams; connection: ClientConnection; steeringSupported: boolean; sessionDeleteSupported: boolean }> {
-  const executable = resolveClaudeExecutable();
+  const executable = await resolveClaudeExecutable();
   const child = spawn(process.execPath, [acpEntryPath()], {
     cwd: process.cwd(),
-    env: { ...providerEnvironment(), CLAUDE_CODE_EXECUTABLE: executable, CLAUDE_AGENT_SDK_CLIENT_APP: "Vagus" },
+    env: { ...await providerEnvironmentWithSearchPath(), CLAUDE_CODE_EXECUTABLE: executable, CLAUDE_AGENT_SDK_CLIENT_APP: "Vagus" },
     stdio: "pipe",
     windowsHide: true,
   });

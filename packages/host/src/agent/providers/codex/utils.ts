@@ -4,7 +4,7 @@ export function isRecord(value: unknown): value is JsonRecord { return Boolean(v
 
 export function safeError(error: unknown): Error {
   const message = error instanceof Error ? error.message : String(error);
-  if (/ENOENT/u.test(message)) return new Error("找不到本机 Codex CLI。请安装 Codex 并确认 codex.exe 在 PATH 中，或设置 VAGUS_CODEX_EXECUTABLE。");
+  if (/ENOENT/u.test(message)) return new Error(`找不到本机 Codex CLI。请安装 Codex 并确认 ${process.platform === "win32" ? "codex.exe" : "codex"} 在 PATH 中，或设置 VAGUS_CODEX_EXECUTABLE。`);
   return new Error(message.slice(0, 1500));
 }
 

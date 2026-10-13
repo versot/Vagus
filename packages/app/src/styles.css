@@ -1,6 +1,6 @@
 :root {
   color-scheme: dark;
-  font-family: Inter, "Segoe UI", "Microsoft YaHei UI", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   --surface: #101114;
@@ -51,6 +51,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .window-resize-edge.southwest { bottom: 0; left: 0; cursor: nesw-resize; }
 .window-resize-edge.southeast { bottom: 0; right: 0; cursor: nwse-resize; }
 .titlebar { height: 40px; flex: 0 0 40px; display: flex; align-items: stretch; background: var(--rail); border-bottom: 1px solid var(--stroke); color: var(--tone-aeb0b4); user-select: none; }
+.app-shell.is-macos-window .titlebar { height: 32px; flex-basis: 32px; padding-left: 76px; }
 .titlebar-history { display: flex; align-items: center; padding: 0 8px; gap: 3px; }
 .titlebar-button, .window-control { width: 34px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 6px; color: var(--tone-a4a6ab); background: transparent; cursor: pointer; }
 .titlebar-button:hover:not(:disabled), .window-control:hover { color: var(--tone-f1f1f2); background: rgba(var(--tone-ffffff-rgb),.075); }
@@ -162,9 +163,6 @@ kbd { color: var(--tone-a7a8ad); border: 1px solid rgba(var(--tone-ffffff-rgb),.
 .session-action { flex: 0 0 25px; width: 25px; height: 25px; padding: 0; border: 0; border-radius: 7px; display: grid; place-items: center; background: transparent; color: var(--tone-999ba1); cursor: pointer; }
 .session-action-tooltip { position: fixed; z-index: 140; padding: 4px 9px; border: 1px solid rgba(var(--tone-ffffff-rgb),.075); border-radius: 22px; display: inline-flex; align-items: center; gap: 8px; background: var(--tone-303033); box-shadow: 0 5px 18px rgba(0,0,0,.34); color: var(--tone-eeeeef); font-size: calc(var(--ui-font-size, 14px) - 1px); line-height: 20px; white-space: nowrap; pointer-events: none; animation: none; transition: none; }
 .session-action-tooltip kbd { padding: 2px 8px; border: 0; border-radius: 12px; background: var(--tone-535458); color: var(--tone-f0f0f1); font-size: calc(var(--ui-font-size, 14px) - 1px); line-height: 20px; }
-.session-action-tooltip.above { transform: translate(-50%, -100%); }
-.session-action-tooltip.below { transform: translate(-50%, 0); }
-.session-action-tooltip.right { transform: translate(0, -50%); }
 .session-action:hover { color: var(--tone-f0f0f2); background: rgba(var(--tone-ffffff-rgb),.09); }
 .session-action.is-pinned { color: var(--tone-d5d6da); }
 .session-action.is-pinned:hover { color: var(--tone-ffffff); }

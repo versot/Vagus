@@ -1,0 +1,22 @@
+{
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Vagus",
+        "width": 1440,
+        "height": 920,
+        "minWidth": 900,
+        "minHeight": 620,
+        "center": true,
+        "decorations": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "trafficLightPosition": {
+          "x": 16,
+          "y": 16
+        }
+      }
+    ]
+  }
+}

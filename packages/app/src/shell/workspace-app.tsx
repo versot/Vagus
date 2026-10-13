@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { invoke, isTauri } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open } from "@tauri-apps/plugin-dialog";
 import { type Project, type ScheduledTask, type WorkspaceSession, type WorkspaceSnapshot } from "@vagus/client";
@@ -50,6 +50,7 @@ import { SessionImportPage } from "../features/sessions/import/session-import-pa
 import { lastUserMessageAt, summaryOnly, uniqueSessions } from "../features/sessions/session-summary.js";
 import { formatSessionUpdatedAt } from "../features/sessions/sidebar/format-time.js";
 import { SessionHoverCardTitle } from "../features/sessions/sidebar/session-hover-card-title.js";
+import type { SessionActionTooltip } from "../features/sessions/sidebar/types.js";
 import { useSidebarDrag } from "../features/sessions/sidebar/use-sidebar-drag.js";
 import { WorkspaceSidebar } from "../features/sessions/sidebar/workspace-sidebar.js";
 import { matchesShortcut, shortcutLabel, useKeyboardShortcuts } from "../features/settings/keyboard-shortcuts.js";
@@ -74,8 +75,33 @@ declare global { interface Window { __TAURI_INTERNALS__?: unknown } }
 const TIMELINE_BOTTOM_THRESHOLD = 2;
 const COMMAND_SOURCE_ORDER: Record<AgentCommandInfo["source"], number> = { skill: 0, extension: 1, prompt: 2, builtin: 3, other: 4 };
 
+function SessionActionTooltipView({ tooltip }: { tooltip: SessionActionTooltip }) {
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const element = tooltipRef.current;
+    if (!element) return;
+
+    const { width, height } = element.getBoundingClientRect();
+    const scale = window.devicePixelRatio || 1;
+    const snap = (value: number) => Math.round(value * scale) / scale;
+    const left = tooltip.placement === "right" ? tooltip.left : tooltip.left - width / 2;
+    const top = tooltip.placement === "above"
+      ? tooltip.top - height
+      : tooltip.placement === "right"
+        ? tooltip.top - height / 2
+        : tooltip.top;
+    element.style.left = `${snap(Math.max(8, Math.min(window.innerWidth - width - 8, left)))}px`;
+    element.style.top = `${snap(Math.max(8, Math.min(window.innerHeight - height - 8, top)))}px`;
+  }, [tooltip]);
+
+  return <div ref={tooltipRef} className="session-action-tooltip" role="tooltip" style={{ left: tooltip.left, top: tooltip.top }}>
+    <span>{tooltip.label}</span>{tooltip.shortcut && <kbd>{tooltip.shortcut}</kbd>}
+  </div>;
+}
+
 export function WorkspaceApp() {
   useTranslation();
+  const useNativeMacWindowControls = isTauri() && /Macintosh|Mac OS X/u.test(navigator.userAgent);
   const shortcuts = useKeyboardShortcuts();
   const [snapshot, setSnapshot] = useState<WorkspaceSnapshot>({ projects: [], sessions: [], providers: [] });
   useEffect(() => {
@@ -2226,7 +2252,7 @@ export function WorkspaceApp() {
 
   void navigationVersion;
   const railSettingsButton = <button className={`rail-button${settingsOpen ? " active" : ""}`} title="" aria-label={i18n.t("打开设置")} aria-current={settingsOpen ? "page" : undefined} onMouseEnter={(event) => showSessionActionTooltip(event, "打开设置", shortcutLabel(shortcuts["open-settings"]), "right")} onMouseLeave={() => setSessionActionTooltip(null)} onClick={() => { setSessionActionTooltip(null); openSettingsView(); }}><Settings size={19} /></button>;
-  return <div className={`app-shell ${startingApp ? "is-starting" : ""} ${isResizingSidebar ? "is-resizing-sidebar" : ""} ${maximized ? "is-maximized" : ""} ${fullscreen ? "is-fullscreen" : ""}`} onContextMenu={(event) => event.preventDefault()}>
+  return <div className={`app-shell ${useNativeMacWindowControls ? "is-macos-window" : ""} ${startingApp ? "is-starting" : ""} ${isResizingSidebar ? "is-resizing-sidebar" : ""} ${maximized ? "is-maximized" : ""} ${fullscreen ? "is-fullscreen" : ""}`} onContextMenu={(event) => event.preventDefault()}>
     {!fullscreen && <div className="window-resize-edges" aria-hidden="true">{(["North", "South", "East", "West", "NorthWest", "NorthEast", "SouthWest", "SouthEast"] as const).map((direction) => <div key={direction} className={`window-resize-edge ${direction.toLowerCase()}`} onMouseDown={(event) => startWindowResize(event, direction)} />)}</div>}
     <header className="titlebar">
       <div className="titlebar-history">
@@ -2297,11 +2323,11 @@ export function WorkspaceApp() {
         {anyTopMenuOpen && <button className="titlebar-menu-dismiss" aria-label={i18n.t("关闭菜单")} onClick={closeTopMenus} />}
       </nav>
       <div className="titlebar-drag" data-tauri-drag-region />
-      <div className="titlebar-window-controls">
+      {!useNativeMacWindowControls && <div className="titlebar-window-controls">
         <button className="window-control" title={i18n.t("最小化")} aria-label={i18n.t("最小化")} onClick={() => runWindowAction(() => getCurrentWindow().minimize())}><Minus size={15} /></button>
         <button className="window-control" title={maximized ? i18n.t("还原") : i18n.t("最大化")} aria-label={maximized ? i18n.t("还原") : i18n.t("最大化")} onClick={() => runWindowAction(toggleWindowMaximize)}>{maximized ? <Copy size={13} /> : <Square size={13} />}</button>
         <button className="window-control close" title={i18n.t("关闭")} aria-label={i18n.t("关闭")} onClick={() => runWindowAction(() => getCurrentWindow().close())}><X size={16} /></button>
-      </div>
+      </div>}
     </header>
     <div className={`app-frame${nav === "scheduled" ? " is-scheduled" : ""}${settingsOpen ? " is-settings-open" : ""}`}>
       {settingsOpen && <div className="settings-view-overlay">
@@ -2662,6 +2688,6 @@ export function WorkspaceApp() {
       </section></div>}
 
     </div>
-    {sessionActionTooltip && createPortal(<div className={`session-action-tooltip ${sessionActionTooltip.placement}`} role="tooltip" style={{ left: sessionActionTooltip.left, top: sessionActionTooltip.top }}><span>{sessionActionTooltip.label}</span>{sessionActionTooltip.shortcut && <kbd>{sessionActionTooltip.shortcut}</kbd>}</div>, document.body)}
+    {sessionActionTooltip && createPortal(<SessionActionTooltipView tooltip={sessionActionTooltip} />, document.body)}
   </div>;
 }

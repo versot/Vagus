@@ -211,7 +211,7 @@ export class CodexProvider implements AgentProvider {
   }
 
   async startSession(options: StartSessionOptions, emit: (event: AgentEvent) => void): Promise<AgentSession> {
-    const session = new CodexSession(options, emit, resolveCodexExecutable());
+    const session = new CodexSession(options, emit, await resolveCodexExecutable());
     try { await session.start(); return session; }
     catch (error) { await session.dispose(); throw safeError(error); }
   }
@@ -230,7 +230,7 @@ export class CodexProvider implements AgentProvider {
   }
 
   private async openModelServer(): Promise<CodexAppServer> {
-    const server = new CodexAppServer(resolveCodexExecutable(), homedir());
+    const server = new CodexAppServer(await resolveCodexExecutable(), homedir());
     await server.start();
     return server;
   }

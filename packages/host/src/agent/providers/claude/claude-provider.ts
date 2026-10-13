@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, isAbsolute, join } from "node:path";
-import { providerEnvironment } from "../../provider-environment.js";
+import { providerEnvironmentWithSearchPath } from "../../provider-environment.js";
 import { ClaudeAcpSession } from "./claude-session.js";
 import { claudePluginOperationError, parseClaudePluginCommandResult } from "./commands.js";
 import { claudeConversation, deleteClaudeSessionTranscript, discoverClaudeSessionFiles } from "./history.js";
@@ -110,11 +110,12 @@ export class ClaudeProvider implements AgentProvider {
   }
 
   async listPlugins(): Promise<ProviderPluginCatalog> {
-    const executable = resolveClaudeExecutable();
+    const executable = await resolveClaudeExecutable();
+    const environment = await providerEnvironmentWithSearchPath();
     try {
       const [pluginResult, marketplaceResult] = await Promise.all([
-        this.runCommand(executable, ["plugin", "list", "--json", "--available"], { timeout: 30_000, maxBuffer: 4 * 1024 * 1024, windowsHide: true, env: providerEnvironment() }),
-        this.runCommand(executable, ["plugin", "marketplace", "list", "--json"], { timeout: 30_000, maxBuffer: 2 * 1024 * 1024, windowsHide: true, env: providerEnvironment() }),
+        this.runCommand(executable, ["plugin", "list", "--json", "--available"], { timeout: 30_000, maxBuffer: 4 * 1024 * 1024, windowsHide: true, env: environment }),
+        this.runCommand(executable, ["plugin", "marketplace", "list", "--json"], { timeout: 30_000, maxBuffer: 2 * 1024 * 1024, windowsHide: true, env: environment }),
       ]);
       const pluginData: unknown = JSON.parse(pluginResult.stdout);
       const marketplaceData: unknown = JSON.parse(marketplaceResult.stdout);
@@ -148,7 +149,7 @@ export class ClaudeProvider implements AgentProvider {
     let stdout = "";
     let commandError: unknown;
     try {
-      ({ stdout } = await this.runCommand(resolveClaudeExecutable(), args, { timeout: 180_000, maxBuffer: 4 * 1024 * 1024, windowsHide: true, env: providerEnvironment(), cwd: homedir() }));
+      ({ stdout } = await this.runCommand(await resolveClaudeExecutable(), args, { timeout: 180_000, maxBuffer: 4 * 1024 * 1024, windowsHide: true, env: await providerEnvironmentWithSearchPath(), cwd: homedir() }));
     } catch (error) {
       commandError = error;
       const captured = error as Error & { stdout?: string };
@@ -173,7 +174,7 @@ export class ClaudeProvider implements AgentProvider {
     if (!/^[\w.-]{1,140}(?:@[\w.-]{1,140})?$/u.test(pluginId)) throw new Error("Claude Code 插件标识无效");
     const args = ["plugin", action, pluginId, ...(scope ? ["--scope", scope] : []), "--json"];
     try {
-      await this.runCommand(resolveClaudeExecutable(), args, { timeout: 120_000, maxBuffer: 2 * 1024 * 1024, windowsHide: true, env: providerEnvironment(), cwd: homedir() });
+      await this.runCommand(await resolveClaudeExecutable(), args, { timeout: 120_000, maxBuffer: 2 * 1024 * 1024, windowsHide: true, env: await providerEnvironmentWithSearchPath(), cwd: homedir() });
     } catch (error) { throw claudePluginOperationError(error); }
     return { providerId: "claude", target: pluginId, action, completed: true };
   }
@@ -197,16 +198,16 @@ export class ClaudeProvider implements AgentProvider {
       target = name;
     }
     try {
-      await this.runCommand(resolveClaudeExecutable(), args, { timeout: 180_000, maxBuffer: 2 * 1024 * 1024, windowsHide: true, env: providerEnvironment(), cwd: homedir() });
+      await this.runCommand(await resolveClaudeExecutable(), args, { timeout: 180_000, maxBuffer: 2 * 1024 * 1024, windowsHide: true, env: await providerEnvironmentWithSearchPath(), cwd: homedir() });
     } catch (error) { throw claudePluginOperationError(error); }
     return { providerId: "claude", target, action, completed: true };
   }
 
   async listMcpServers(): Promise<ProviderMcpCatalog> {
     try {
-      const result = await execFileAsync(resolveClaudeExecutable(), ["mcp", "list"], {
+      const result = await execFileAsync(await resolveClaudeExecutable(), ["mcp", "list"], {
         timeout: 45_000, maxBuffer: 1024 * 1024, windowsHide: true,
-        env: providerEnvironment(), cwd: homedir(),
+        env: await providerEnvironmentWithSearchPath(), cwd: homedir(),
       });
       return { providerId: "claude", servers: parseClaudeMcpList(result.stdout), fetchedAt: new Date().toISOString() };
     } catch (error) {
@@ -223,9 +224,9 @@ export class ClaudeProvider implements AgentProvider {
     const listed = await this.listMcpServers();
     if (!listed.servers.some(server => server.name === serverName)) throw new Error("找不到这个 MCP 服务；请刷新清单后重试。");
     try {
-      const result = await execFileAsync(resolveClaudeExecutable(), ["mcp", "get", serverName], {
+      const result = await execFileAsync(await resolveClaudeExecutable(), ["mcp", "get", serverName], {
         timeout: 20_000, maxBuffer: 1024 * 1024, windowsHide: true,
-        env: providerEnvironment(), cwd: homedir(),
+        env: await providerEnvironmentWithSearchPath(), cwd: homedir(),
       });
       return parseClaudeMcpDetails(serverName, result.stdout);
     } catch {
