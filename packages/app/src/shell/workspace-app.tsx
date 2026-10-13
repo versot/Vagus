@@ -62,6 +62,7 @@ import i18n from "../locales/i18n.js";
 import type { WorkspaceTabContext, WorkspaceTabId } from "../workspace-tabs/registry.js";
 import { useWorkspacePanelSize } from "../workspace-tabs/use-workspace-panel-size.js";
 import { useWorkspaceViews } from "../workspace-tabs/use-workspace-views.js";
+import { markdownImageFilePath } from "../features/conversation/components/markdown-local-file.js";
 import { WorkspaceTabHost } from "../workspace-tabs/workspace-tab-host.js";
 import { WorkspacePanelResizer, WorkspaceViewBar } from "../workspace-tabs/workspace-views.js";
 import type { NavigationLocation } from "./navigation-types.js";
@@ -1280,6 +1281,13 @@ export function WorkspaceApp() {
     lastHomeLocationRef.current = { projectId: selectedSession?.projectId ?? selectedProjectId, sessionId: selectedSession?.id ?? null };
   }, [nav, selectedProjectId, selectedSession?.id, selectedSession?.projectId, selectedSession?.scheduledTaskId]);
   const openMarkdownUrl = (rawUrl: string) => {
+    const imagePath = markdownImageFilePath(rawUrl);
+    if (imagePath) {
+      const baseDirectory = selectedSession?.projectId ? snapshot.projects.find(project => project.id === selectedSession.projectId)?.root ?? null : selectedProject?.root ?? null;
+      openWorkspaceTab("image-preview", { path: imagePath, baseDirectory });
+      if (navRef.current === "scheduled") navigateTo({ projectId: selectedSession?.projectId ?? selectedProjectId, sessionId: selectedSessionId, nav: "home" });
+      return;
+    }
     let url: URL;
     try { url = new URL(rawUrl); } catch { return; }
     if (url.protocol !== "http:" && url.protocol !== "https:") return;

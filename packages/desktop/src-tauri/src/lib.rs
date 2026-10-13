@@ -81,6 +81,7 @@ pub fn run() {
             external_open::open_pi_package_market,
             filesystem::filesystem_list_directory,
             filesystem::filesystem_read_file,
+            filesystem::filesystem_read_image,
             filesystem::filesystem_write_file,
             filesystem::filesystem_open_path,
             filesystem::open_external_url,

@@ -1155,4 +1155,7 @@ export default {
   "ZCode 需要先安装并登录 ZCode。此命令安装社区维护的 ACP 连接器，Vagus 会通过它连接 ZCode。":
     "Installiere ZCode zuerst und melde dich dort an. Dieser Befehl installiert den von der Community gepflegten ACP-Connector, über den Vagus ZCode verbindet.",
   查看安装与配置说明: "Installations- und Einrichtungshinweise anzeigen",
+  图片预览: "Bildvorschau",
+  无法预览此图片: "Dieses Bild kann nicht angezeigt werden",
+  "正在读取图片…": "Bild wird geladen…",
 } satisfies TranslationDictionary;

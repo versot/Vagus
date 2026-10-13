@@ -161,6 +161,86 @@ pub async fn filesystem_read_file(root: String, path: String) -> Result<FileText
         .map_err(|error| format!("无法读取文件：{error}"))?
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FileImage {
+    name: String,
+    size: u64,
+    data_url: String,
+}
+
+#[tauri::command]
+pub async fn filesystem_read_image(
+    path: String,
+    base_directory: Option<String>,
+) -> Result<FileImage, String> {
+    tauri::async_runtime::spawn_blocking(move || read_image(path, base_directory))
+        .await
+        .map_err(|error| format!("无法读取图片：{error}"))?
+}
+
+fn read_image(path: String, base_directory: Option<String>) -> Result<FileImage, String> {
+    const MAX_IMAGE_BYTES: u64 = 20 * 1024 * 1024;
+    let requested_path = Path::new(&path);
+    let path = if requested_path.is_absolute() {
+        requested_path.to_path_buf()
+    } else {
+        let base = base_directory.ok_or_else(|| "相对图片路径缺少工作区目录".to_string())?;
+        let root = Path::new(&base)
+            .canonicalize()
+            .map_err(|error| format!("无法访问工作区：{error}"))?;
+        let resolved = root
+            .join(requested_path)
+            .canonicalize()
+            .map_err(|error| format!("无法访问此图片：{error}"))?;
+        if !resolved.starts_with(&root) {
+            return Err("只能预览工作区文件夹中的图片".to_string());
+        }
+        resolved
+    }
+    .canonicalize()
+    .map_err(|error| format!("无法访问此图片：{error}"))?;
+    let metadata = fs::metadata(&path).map_err(|error| error.to_string())?;
+    if !metadata.is_file() {
+        return Err("所选路径不是文件".to_string());
+    }
+    if metadata.len() > MAX_IMAGE_BYTES {
+        return Err("图片超过 20 MB，暂不支持预览".to_string());
+    }
+    let mime_type = match path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "png" => "image/png",
+        "jpg" | "jpeg" => "image/jpeg",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        "avif" => "image/avif",
+        "bmp" => "image/bmp",
+        "ico" => "image/x-icon",
+        "tif" | "tiff" => "image/tiff",
+        "svg" => "image/svg+xml",
+        _ => return Err("此文件格式不是支持的图片类型".to_string()),
+    };
+    let bytes = fs::read(&path).map_err(|error| format!("无法读取图片：{error}"))?;
+    let data_url = format!(
+        "data:{mime_type};base64,{}",
+        base64::Engine::encode(&base64::engine::general_purpose::STANDARD, bytes)
+    );
+    Ok(FileImage {
+        name: path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("image")
+            .to_string(),
+        size: metadata.len(),
+        data_url,
+    })
+}
+
 fn read_file(root: String, path: String) -> Result<FileText, String> {
     const MAX_PREVIEW_BYTES: u64 = 2 * 1024 * 1024;
     let root = canonical_root(&root)?;

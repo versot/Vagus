@@ -4,7 +4,7 @@ import { Download, FileText, X } from "lucide-react";
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent, type WheelEvent } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
+import ReactMarkdown from "react-markdown";
 import { jsx, jsxs } from "react/jsx-runtime";
 import remarkGfm from "remark-gfm";
 import { recordPerformance } from "../../../lib/performance.js";
@@ -12,13 +12,13 @@ import i18n from "../../../locales/i18n.js";
 import { requestMarkdown, type MarkdownBlock } from "../markdown-service.js";
 import type { ChatMessage } from "../types.js";
 import { BrowserElementChip } from "./browser-element-chip.js";
-import { createMarkdownComponents } from "./markdown-components.js";
+import { createMarkdownComponents, markdownUrlTransform } from "./markdown-components.js";
 
 const plugins = [remarkGfm];
 type MarkdownLinkHandler = (url: string) => void;
 const MarkdownBody = memo(function MarkdownBody({ text, onOpenUrl }: { text: string; onOpenUrl?: MarkdownLinkHandler }) {
   const components = useMemo(() => createMarkdownComponents(onOpenUrl), [onOpenUrl]);
-  return <ReactMarkdown remarkPlugins={plugins} components={components}>{text}</ReactMarkdown>;
+  return <ReactMarkdown remarkPlugins={plugins} components={components} urlTransform={markdownUrlTransform}>{text}</ReactMarkdown>;
 });
 
 const ParsedBlock = memo(function ParsedBlock({ block, onOpenUrl }: { block: MarkdownBlock; onOpenUrl?: MarkdownLinkHandler }) {
@@ -29,7 +29,7 @@ const ParsedBlock = memo(function ParsedBlock({ block, onOpenUrl }: { block: Mar
     while (stack.length) {
       const node = stack.pop()!;
       if (node.type === "raw") node.type = "text";
-      for (const name of ["href", "src", "cite"]) if (typeof node.properties?.[name] === "string") node.properties[name] = defaultUrlTransform(node.properties[name]);
+      for (const name of ["href", "src", "cite"]) if (typeof node.properties?.[name] === "string") node.properties[name] = markdownUrlTransform(node.properties[name] as string);
       if (node.children) stack.push(...node.children as typeof stack);
     }
     const result = toJsxRuntime(block.tree, { Fragment, jsx, jsxs, components: createMarkdownComponents(onOpenUrl) });
