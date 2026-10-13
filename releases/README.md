@@ -8,10 +8,11 @@ releases/v0.1.0-beta.1.md
 
 Current release notes:
 
+- [`v0.1.0-beta.3`](v0.1.0-beta.3.md)
 - [`v0.1.0-beta.2`](v0.1.0-beta.2.md)
 - [`v0.1.0-beta.1`](v0.1.0-beta.1.md)
 
-When a release note is merged into `main`, GitHub Actions validates the version against the application manifests, builds installers for Windows x64, macOS Intel, and Apple silicon, then creates the corresponding GitHub Release. SemVer prereleases such as `0.1.0-beta.1` are marked as pre-releases. The Markdown file becomes the Release description, and the build artifacts include `SHA256SUMS.txt`.
+When a release note is merged into `main`, GitHub Actions validates the version against the application manifests, builds installers for Windows x64, macOS Intel, and Apple silicon, then creates the corresponding GitHub Release. SemVer prereleases such as `0.1.0-beta.1` are marked as pre-releases. The Markdown file becomes the Release description, and the build installers are attached as Release assets.
 
 Release notes must be written in professional, concise English. The workflow rejects release note files containing Chinese characters. Keep descriptions user-focused: explain the change and its impact without exposing internal implementation details unless they affect users.
 

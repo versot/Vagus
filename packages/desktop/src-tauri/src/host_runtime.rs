@@ -56,7 +56,10 @@ fn parse_login_shell_node(output: &[u8]) -> Option<PathBuf> {
 #[cfg(target_os = "macos")]
 fn node_from_login_shell() -> Option<PathBuf> {
     let shell = std::env::var_os("SHELL").unwrap_or_else(|| "/bin/zsh".into());
-    let output = Command::new(shell).args(["-lic", "command -v node"]).output().ok()?;
+    let output = Command::new(shell)
+        .args(["-lic", "command -v node"])
+        .output()
+        .ok()?;
     if !output.status.success() {
         return None;
     }

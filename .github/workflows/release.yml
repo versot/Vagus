@@ -133,10 +133,6 @@ jobs:
           path: release-assets
           pattern: vagus-*
           merge-multiple: true
-      - name: Prepare checksums
-        run: |
-          cd release-assets
-          sha256sum * > SHA256SUMS.txt
       - name: Publish Beta or stable Release
         uses: softprops/action-gh-release@v2
         with:
