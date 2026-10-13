@@ -1141,4 +1141,18 @@ export default {
   彻底删除定时任务: "Delete task permanently",
   工作区读写: "Arbeitsbereich lesen und schreiben",
   完全访问: "Vollzugriff",
+  如何连接: "Verbindung einrichten",
+  "安装并配置本机 CLI 后，返回此处刷新模型目录。":
+    "Installiere und konfiguriere die lokale CLI. Kehre anschließend hierher zurück und aktualisiere den Modellkatalog.",
+  安装命令: "Installationsbefehl",
+  "安装后运行 pi 并使用 /login 配置模型服务。":
+    "Starte nach der Installation pi und richte mit /login einen Modellanbieter ein.",
+  "安装后运行 claude 并完成登录。": "Starte nach der Installation claude und melde dich an.",
+  "安装后运行 codex 并完成登录。": "Starte nach der Installation codex und melde dich an.",
+  "安装后运行 opencode 并使用 /connect 配置模型服务。":
+    "Starte nach der Installation opencode und richte mit /connect einen Modellanbieter ein.",
+  "安装后运行 qoder 并完成登录。": "Starte nach der Installation qoder und melde dich an.",
+  "ZCode 需要先安装并登录 ZCode。此命令安装社区维护的 ACP 连接器，Vagus 会通过它连接 ZCode。":
+    "Installiere ZCode zuerst und melde dich dort an. Dieser Befehl installiert den von der Community gepflegten ACP-Connector, über den Vagus ZCode verbindet.",
+  查看安装与配置说明: "Installations- und Einrichtungshinweise anzeigen",
 } satisfies TranslationDictionary;

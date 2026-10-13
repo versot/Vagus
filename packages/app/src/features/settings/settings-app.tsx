@@ -43,6 +43,7 @@ import { interfaceLanguages } from "../../locales/interface-languages.js";
 import { ProviderExtensions } from "../providers/provider-extensions.js";
 import { ProviderMcpServers } from "../providers/provider-mcp-servers.js";
 import { ProviderPlugins } from "../providers/provider-plugins.js";
+import { ProviderSetupGuide } from "../providers/provider-setup-guide.js";
 import { useSessionSearch } from "../sessions/hooks/use-session-search.js";
 import { defaultAppSettings, type AppSettings } from "./app-settings.js";
 import { AppearanceSettingsPanel } from "./appearance-settings.js";
@@ -1144,6 +1145,8 @@ export function ArchiveSettingsApp({
                               {selectedProvider.displayName}…
                             </span>
                           </div>
+                        ) : filteredModels.length === 0 && !modelSearch.trim() ? (
+                          <ProviderSetupGuide providerId={selectedProvider.id} />
                         ) : filteredModels.length === 0 ? (
                           <div className="provider-model-empty">
                             <span>
