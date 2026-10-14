@@ -8,6 +8,7 @@ releases/v0.1.0-beta.1.md
 
 Current release notes:
 
+- [`v0.1.0-beta.6`](v0.1.0-beta.6.md)
 - [`v0.1.0-beta.5`](v0.1.0-beta.5.md)
 - [`v0.1.0-beta.4`](v0.1.0-beta.4.md)
 - [`v0.1.0-beta.3`](v0.1.0-beta.3.md)
