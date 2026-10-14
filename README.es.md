@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/vagus-turn-changes-showcase.png" alt="Revisar cambios y diferencias de un agente en Vagus" width="1000" />
+  <img src="assets/screenshots/vagus-turn-changes.png" alt="Revisar cambios y diferencias de un agente en Vagus" width="1000" />
 </p>
 
 <p align="center"><sub>La conversación y sus cambios de archivos, uno al lado del otro.</sub></p>
@@ -37,21 +37,21 @@ Vagus reúne proyectos y conversaciones con agentes en un mismo espacio de escri
 - **Programa tareas repetitivas.** Crea tareas locales programadas y elige el agente, modelo y modo disponibles para cada una.
 
 <p align="center">
-  <img src="assets/screenshots/vagus-agent-picker-showcase.png" alt="Seleccionar un agente para una nueva conversación en Vagus" width="1000" />
+  <img src="assets/screenshots/vagus-agent-picker-detail.svg" alt="Seleccionar un agente para una nueva conversación en Vagus" width="1000" />
 </p>
 
 <p align="center"><sub>Elige un agente al iniciar una conversación.</sub></p>
 
 ### Agentes integrados
 
-| Agente | Integración | Notas |
-| --- | --- | --- |
-| Pi | Pi RPC | Conserva las interacciones con extensiones de Pi y la importación nativa de conversaciones. |
-| Claude Code | Puente ACP | La CLI local de Claude Code gestiona instalación, inicio de sesión y configuración. |
-| Codex | Codex app-server | Usa la CLI local de Codex; app-server sigue siendo una interfaz experimental. |
-| OpenCode | ACP | Usa las capacidades de sesión expuestas por la CLI local de OpenCode. |
-| Qoder CLI | ACP | Usa las capacidades expuestas por la CLI local de Qoder. |
-| ZCode | Puente ACP | Se conecta mediante `zcode-acp-server`, mantenido por la comunidad; no es una integración ACP oficial de Z.ai. |
+| Agente      | Integración      | Notas                                                                                                          |
+| ----------- | ---------------- | -------------------------------------------------------------------------------------------------------------- |
+| Pi          | Pi RPC           | Conserva las interacciones con extensiones de Pi y la importación nativa de conversaciones.                    |
+| Claude Code | Puente ACP       | La CLI local de Claude Code gestiona instalación, inicio de sesión y configuración.                            |
+| Codex       | Codex app-server | Usa la CLI local de Codex; app-server sigue siendo una interfaz experimental.                                  |
+| OpenCode    | ACP              | Usa las capacidades de sesión expuestas por la CLI local de OpenCode.                                          |
+| Qoder CLI   | ACP              | Usa las capacidades expuestas por la CLI local de Qoder.                                                       |
+| ZCode       | Puente ACP       | Se conecta mediante `zcode-acp-server`, mantenido por la comunidad; no es una integración ACP oficial de Z.ai. |
 
 Las herramientas oficiales de cada agente gestionan su instalación, cuenta y modelos. Vagus no inicia sesión por ti ni garantiza funciones que el agente no exponga mediante su protocolo de integración.
 

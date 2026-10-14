@@ -1,56 +1,37 @@
-import { execFile, spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { constants } from "node:fs";
-import { access, readFile, realpath } from "node:fs/promises";
-import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import spawn from "cross-spawn";
+import type { ChildProcessWithoutNullStreams } from "node:child_process";
+import { realpath } from "node:fs/promises";
+import { join } from "node:path";
 import { StringDecoder } from "node:string_decoder";
-import { promisify } from "node:util";
 import { providerEnvironmentWithSearchPath } from "../../provider-environment.js";
-import { resolveProviderExecutable } from "../../provider-executable.js";
+import { resolveProviderExecutable, type ResolvedProviderExecutable } from "../../provider-executable.js";
+import {
+  CodexStartupError,
+  codexConfigurationHint,
+  codexStartupHint,
+  nativeArm64CodexBinaries,
+  probeCodexVersion,
+  terminateCodexProcess,
+} from "./executable.js";
 import { type PendingRpc, type RpcId } from "./types.js";
 import { isRecord, safeError } from "./utils.js";
 
-const execFileAsync = promisify(execFile);
-
-async function arm64CodexBinary(executable: string, environment: NodeJS.ProcessEnv): Promise<string | undefined> {
-  if (process.platform !== "darwin" || process.arch !== "x64" || environment.VAGUS_CODEX_EXECUTABLE?.trim())
-    return undefined;
-
-  try {
-    const { stdout } = await execFileAsync("/usr/sbin/sysctl", ["-n", "hw.optional.arm64"], {
-      timeout: 1_000,
-      maxBuffer: 4_096,
-    });
-    if (stdout.trim() !== "1") return undefined;
-
-    const entry = await realpath(executable);
-    if (!(await readFile(entry, "utf8")).startsWith("#!/usr/bin/env node")) return undefined;
-    const packageRoot = dirname(dirname(entry));
-    const rootPackage = JSON.parse(await readFile(join(packageRoot, "package.json"), "utf8")) as {
-      name?: unknown;
-      version?: unknown;
-    };
-    if (rootPackage.name !== "@openai/codex" || typeof rootPackage.version !== "string") return undefined;
-
-    const require = createRequire(entry);
-    const arm64PackagePath = require.resolve("@openai/codex-darwin-arm64/package.json");
-    const arm64Package = JSON.parse(await readFile(arm64PackagePath, "utf8")) as { version?: unknown };
-    if (arm64Package.version !== `${rootPackage.version}-darwin-arm64`) return undefined;
-
-    const binary = join(dirname(arm64PackagePath), "vendor", "aarch64-apple-darwin", "bin", "codex");
-    await access(binary, constants.X_OK);
-    return binary;
-  } catch {
-    // Keep the configured CLI path when native ARM64 Codex is not installed.
-    return undefined;
-  }
+export interface CodexStartupOptions {
+  automaticDiscovery?: boolean;
+  environment?: NodeJS.ProcessEnv;
+  versionTimeoutMs?: number;
+  startupTimeoutMs?: number;
+  discoveryTimeoutMs?: number;
 }
 
 export async function resolveCodexExecutable(environment: NodeJS.ProcessEnv = process.env): Promise<string> {
   return (await resolveCodexExecutableDetails(environment)).path;
 }
 
-export async function resolveCodexExecutableDetails(environment: NodeJS.ProcessEnv = process.env) {
+export async function resolveCodexExecutableDetails(
+  environment: NodeJS.ProcessEnv = process.env,
+  validate?: (candidate: ResolvedProviderExecutable) => Promise<ResolvedProviderExecutable | undefined>,
+) {
   const candidatePaths: string[] = [];
   if (process.platform === "win32" && environment.LOCALAPPDATA) {
     const installRoot = join(environment.LOCALAPPDATA, "OpenAI", "Codex", "bin");
@@ -62,15 +43,27 @@ export async function resolveCodexExecutableDetails(environment: NodeJS.ProcessE
       /* optional versioned desktop install */
     }
   }
-  const resolved = await resolveProviderExecutable({
+  return resolveProviderExecutable({
     displayName: "Codex CLI",
     commandNames: process.platform === "win32" ? ["codex.exe", "codex"] : ["codex"],
     environmentVariables: ["VAGUS_CODEX_EXECUTABLE"],
     candidatePaths,
     environment,
+    strictConfigured: true,
+    validate: async (resolved) => {
+      const native = await nativeArm64CodexBinaries(resolved.path, environment);
+      const candidates = [
+        ...native.map((path) => ({ path, source: `${resolved.source}; native ARM64 Codex package` })),
+        resolved,
+      ];
+      if (!validate) return candidates[0];
+      for (const candidate of candidates) {
+        const accepted = await validate(candidate);
+        if (accepted) return accepted;
+      }
+      return undefined;
+    },
   });
-  const nativeArm64 = await arm64CodexBinary(resolved.path, environment);
-  return nativeArm64 ? { path: nativeArm64, source: `${resolved.source}; native ARM64 Codex package` } : resolved;
 }
 
 export function codexAppServerArgs(platform = process.platform): string[] {
@@ -90,11 +83,17 @@ export class CodexAppServer {
   private onServerRequest: (id: RpcId, method: string, params: unknown) => void = () => {};
   private onExit: (error: Error) => void = () => {};
   private closed = false;
+  private ready = false;
+  private closing: Promise<void> | undefined;
+  private stderr = "";
+  private stopped = false;
+  private readonly startupAbort = new AbortController();
 
   constructor(
-    private readonly executable: string,
+    private executable: string,
     private readonly cwd: string,
-    readonly executableSource = "configured executable",
+    public executableSource = "configured executable",
+    private readonly startupOptions: CodexStartupOptions = {},
   ) {}
 
   get executablePath(): string {
@@ -112,28 +111,140 @@ export class CodexAppServer {
   }
 
   async start(): Promise<void> {
-    this.child = spawn(this.executable, codexAppServerArgs(), {
+    if (this.ready) return;
+    if (this.stopped) throw new Error("Codex app-server startup was cancelled.");
+    const deadline = Date.now() + (this.startupOptions.discoveryTimeoutMs ?? 30_000);
+    const environment = await providerEnvironmentWithSearchPath(this.startupOptions.environment);
+    const tried = new Set<string>();
+    const failures: Error[] = [];
+    let configurationError: CodexStartupError | undefined;
+    const validate = async (candidate: ResolvedProviderExecutable) => {
+      const path = await realpath(candidate.path).catch(() => candidate.path);
+      const key = process.platform === "win32" ? path.toLowerCase() : path;
+      if (this.stopped || configurationError || tried.has(key) || tried.size >= 8 || Date.now() >= deadline)
+        return undefined;
+      tried.add(key);
+      try {
+        await probeCodexVersion(
+          candidate.path,
+          environment,
+          Math.min(this.startupOptions.versionTimeoutMs ?? 3_000, Math.max(1, deadline - Date.now())),
+          this.startupAbort.signal,
+        );
+        if (this.stopped) throw new Error("Codex app-server startup was cancelled.");
+        this.executable = candidate.path;
+        this.executableSource = candidate.source;
+        await this.startCandidate(
+          environment,
+          Math.min(this.startupOptions.startupTimeoutMs ?? 10_000, Math.max(1, deadline - Date.now())),
+        );
+        return candidate;
+      } catch (error) {
+        failures.push(error instanceof Error ? error : new Error(String(error)));
+        if (error instanceof CodexStartupError && error.kind === "configuration") configurationError = error;
+        return undefined;
+      }
+    };
+    // All consumers, including model refresh and session startup, validate the
+    // initially resolved executable and use this same fallback search.
+    if (await validate({ path: this.executable, source: this.executableSource })) return;
+    if (this.stopped) throw new Error("Codex app-server startup was cancelled.");
+    if (configurationError) throw configurationError;
+    if (this.startupOptions.automaticDiscovery && !environment.VAGUS_CODEX_EXECUTABLE?.trim()) {
+      try {
+        if (await resolveCodexExecutableDetails(environment, validate)) return;
+      } catch (error) {
+        if (!failures.length) throw error;
+      }
+    }
+    if (this.stopped) throw new Error("Codex app-server startup was cancelled.");
+    if (configurationError) throw configurationError;
+    const details = failures
+      .map((error) => error.message)
+      .join("; ")
+      .slice(0, 1_200);
+    throw new Error(
+      `No usable Codex CLI was found. ${details || "Executable discovery timed out."} Install or update Codex CLI, or set VAGUS_CODEX_EXECUTABLE to a working CLI.`,
+    );
+  }
+
+  private async startCandidate(environment: NodeJS.ProcessEnv, timeoutMs: number): Promise<void> {
+    this.closed = false;
+    this.ready = false;
+    this.closing = undefined;
+    this.decoder = new StringDecoder("utf8");
+    this.buffered = "";
+    this.stderr = "";
+    const child = spawn(this.executable, codexAppServerArgs(), {
       cwd: this.cwd,
-      env: await providerEnvironmentWithSearchPath(),
+      env: environment,
       windowsHide: true,
       stdio: ["pipe", "pipe", "pipe"],
+      detached: process.platform !== "win32",
+    }) as ChildProcessWithoutNullStreams;
+    this.child = child;
+    const fail = (error: Error) => {
+      if (this.child === child) this.fail(error);
+    };
+    child.stdout.on("data", (chunk: Buffer) => {
+      if (this.child === child) this.consume(chunk);
     });
-    this.child.stdout.on("data", (chunk: Buffer) => this.consume(chunk));
-    this.child.stderr.on("data", () => {
-      /* CLI diagnostics may contain local paths or sensitive configuration. */
+    child.stderr.on("data", (chunk: Buffer) => {
+      // Keep a bounded buffer for known startup error classification. Raw CLI
+      // output may contain credentials, so it is never exposed to the UI.
+      if (this.child === child && !this.ready) this.stderr = `${this.stderr}${chunk.toString("utf8")}`.slice(-4_096);
     });
-    this.child.stdin.on("error", (error) => this.fail(safeError(error)));
-    this.child.stdout.on("error", (error) => this.fail(safeError(error)));
-    this.child.stderr.on("error", (error) => this.fail(safeError(error)));
-    this.child.once("error", (error) => this.fail(safeError(error)));
-    this.child.once("exit", (code, signal) =>
-      this.fail(new Error(`Codex app-server 已退出（${signal ?? code ?? "unknown"}）`)),
+    child.stdin.on("error", (error) => fail(safeError(error)));
+    child.stdout.on("error", (error) => fail(safeError(error)));
+    child.stderr.on("error", (error) => fail(safeError(error)));
+    child.once("error", (error: NodeJS.ErrnoException) =>
+      fail(new CodexStartupError("launch", this.executable, error.code ?? "Process could not be launched.")),
     );
-    await this.request("initialize", {
-      clientInfo: { name: "vagus", title: "Vagus", version: "0.1.0" },
-      capabilities: { experimentalApi: true, requestAttestation: false },
-    });
-    this.notify("initialized", {});
+    child.once("exit", (code, signal) =>
+      fail(
+        new CodexStartupError(
+          "exit",
+          this.executable,
+          codexStartupHint(this.stderr) || `app-server exited (${signal ?? code ?? "unknown"}).`,
+        ),
+      ),
+    );
+    try {
+      const initialized = await this.request<unknown>(
+        "initialize",
+        {
+          clientInfo: { name: "vagus", title: "Vagus", version: "0.1.0" },
+          capabilities: { experimentalApi: true, requestAttestation: false },
+        },
+        timeoutMs,
+      );
+      if (!isRecord(initialized) || typeof initialized.userAgent !== "string")
+        throw new CodexStartupError(
+          "protocol",
+          this.executable,
+          "app-server returned an invalid initialization response. Update Codex CLI.",
+        );
+      this.notify("initialized", {});
+      if (this.closed) throw new CodexStartupError("exit", this.executable, "app-server closed during initialization.");
+      this.ready = true;
+      this.stderr = "";
+    } catch (error) {
+      const configuration =
+        codexConfigurationHint(this.stderr) ||
+        codexConfigurationHint(error instanceof Error ? error.message : String(error));
+      const failure = configuration
+        ? new CodexStartupError("configuration", this.executable, configuration)
+        : error instanceof CodexStartupError
+          ? error
+          : new CodexStartupError(
+              "protocol",
+              this.executable,
+              codexStartupHint(this.stderr) ||
+                "app-server initialization failed. Update Codex CLI and check its configuration.",
+            );
+      await this.closeCandidate();
+      throw failure;
+    }
   }
 
   request<T = unknown>(method: string, params: unknown, timeoutMs = 120_000): Promise<T> {
@@ -142,10 +253,24 @@ export class CodexAppServer {
     return new Promise<T>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id);
-        reject(new Error(`Codex 请求超时：${method}`));
+        reject(
+          method === "initialize"
+            ? new CodexStartupError(
+                "timeout",
+                this.executable,
+                `app-server initialization timed out after ${timeoutMs} ms.`,
+              )
+            : new Error(`Codex 请求超时：${method}`),
+        );
       }, timeoutMs);
       this.pending.set(id, { resolve: (value) => resolve(value as T), reject, timer });
-      this.write({ jsonrpc: "2.0", id, method, params });
+      try {
+        this.write({ jsonrpc: "2.0", id, method, params });
+      } catch (error) {
+        clearTimeout(timer);
+        this.pending.delete(id);
+        reject(error);
+      }
     });
   }
 
@@ -161,28 +286,25 @@ export class CodexAppServer {
     this.write({ jsonrpc: "2.0", id, error: { code, message } });
   }
 
-  async close(): Promise<void> {
-    if (this.closed) return;
+  close(): Promise<void> {
+    this.stopped = true;
+    this.startupAbort.abort();
+    return this.closeCandidate();
+  }
+
+  private closeCandidate(): Promise<void> {
+    if (this.closing) return this.closing;
     const child = this.child;
     this.closed = true;
+    this.ready = false;
     for (const [id, pending] of this.pending) {
       clearTimeout(pending.timer);
       pending.reject(new Error("Codex app-server 已关闭"));
       this.pending.delete(id);
     }
-    if (child && child.exitCode === null && child.signalCode === null) {
-      child.stdin.end();
-      child.kill("SIGKILL");
-      await Promise.race([
-        new Promise<void>((resolve) => child.once("close", () => resolve())),
-        new Promise<void>((resolve) => setTimeout(resolve, 1500)),
-      ]);
-      child.stdin.destroy();
-      child.stdout.destroy();
-      child.stderr.destroy();
-      child.unref();
-    }
     this.child = null;
+    this.closing = child ? terminateCodexProcess(child) : Promise.resolve();
+    return this.closing;
   }
 
   private write(value: unknown): void {
@@ -227,13 +349,16 @@ export class CodexAppServer {
 
   private fail(error: Error): void {
     if (this.closed) return;
+    const wasReady = this.ready;
     this.closed = true;
     for (const pending of this.pending.values()) {
       clearTimeout(pending.timer);
       pending.reject(error);
     }
     this.pending.clear();
-    this.child = null;
-    this.onExit(error);
+    if (wasReady) {
+      void this.close().catch(() => undefined);
+      this.onExit(error);
+    }
   }
 }

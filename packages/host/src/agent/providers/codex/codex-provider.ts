@@ -400,7 +400,7 @@ export class CodexProvider implements AgentProvider {
 
   private async openModelServer(): Promise<CodexAppServer> {
     const executable = await resolveCodexExecutableDetails();
-    const server = new CodexAppServer(executable.path, homedir(), executable.source);
+    const server = new CodexAppServer(executable.path, homedir(), executable.source, { automaticDiscovery: true });
     await server.start();
     return server;
   }

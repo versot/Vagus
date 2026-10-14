@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/vagus-turn-changes-showcase.png" alt="Xem lại các thay đổi và diff của agent trong Vagus" width="1000" />
+  <img src="assets/screenshots/vagus-turn-changes.png" alt="Xem lại các thay đổi và diff của agent trong Vagus" width="1000" />
 </p>
 
 <p align="center"><sub>Hội thoại và thay đổi tệp đặt cạnh nhau.</sub></p>
@@ -37,21 +37,21 @@ Vagus đưa dự án và hội thoại với Agent vào cùng một không gian 
 - **Lên lịch công việc lặp lại.** Tạo tác vụ cục bộ theo lịch và chọn Agent, mô hình, chế độ khả dụng cho từng tác vụ.
 
 <p align="center">
-  <img src="assets/screenshots/vagus-agent-picker-showcase.png" alt="Chọn agent cho cuộc trò chuyện mới trong Vagus" width="1000" />
+  <img src="assets/screenshots/vagus-agent-picker-detail.svg" alt="Chọn agent cho cuộc trò chuyện mới trong Vagus" width="1000" />
 </p>
 
 <p align="center"><sub>Chọn Agent khi bắt đầu hội thoại.</sub></p>
 
 ### Agent được tích hợp
 
-| Agent | Cách tích hợp | Ghi chú |
-| --- | --- | --- |
-| Pi | Pi RPC | Hỗ trợ tương tác với extension Pi và nhập hội thoại gốc. |
-| Claude Code | Cầu nối ACP | CLI Claude Code cục bộ quản lý cài đặt, đăng nhập và cấu hình người dùng. |
-| Codex | Codex app-server | Dùng CLI Codex cục bộ; app-server vẫn là giao diện thử nghiệm. |
-| OpenCode | ACP | Dùng khả năng phiên làm việc do CLI OpenCode cục bộ cung cấp. |
-| Qoder CLI | ACP | Dùng các khả năng do CLI Qoder cục bộ cung cấp. |
-| ZCode | Cầu nối ACP | Kết nối qua `zcode-acp-server` do cộng đồng duy trì; đây không phải tích hợp ACP chính thức của Z.ai. |
+| Agent       | Cách tích hợp    | Ghi chú                                                                                               |
+| ----------- | ---------------- | ----------------------------------------------------------------------------------------------------- |
+| Pi          | Pi RPC           | Hỗ trợ tương tác với extension Pi và nhập hội thoại gốc.                                              |
+| Claude Code | Cầu nối ACP      | CLI Claude Code cục bộ quản lý cài đặt, đăng nhập và cấu hình người dùng.                             |
+| Codex       | Codex app-server | Dùng CLI Codex cục bộ; app-server vẫn là giao diện thử nghiệm.                                        |
+| OpenCode    | ACP              | Dùng khả năng phiên làm việc do CLI OpenCode cục bộ cung cấp.                                         |
+| Qoder CLI   | ACP              | Dùng các khả năng do CLI Qoder cục bộ cung cấp.                                                       |
+| ZCode       | Cầu nối ACP      | Kết nối qua `zcode-acp-server` do cộng đồng duy trì; đây không phải tích hợp ACP chính thức của Z.ai. |
 
 Công cụ chính thức của từng Agent quản lý việc cài đặt, tài khoản và cấu hình mô hình. Vagus không đăng nhập thay bạn và không đảm bảo các tính năng mà Agent không công bố qua giao thức tích hợp.
 

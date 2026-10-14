@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/vagus-turn-changes-showcase.png" alt="Vagus で Agent の変更と差分を確認" width="1000" />
+  <img src="assets/screenshots/vagus-turn-changes.png" alt="Vagus で Agent の変更と差分を確認" width="1000" />
 </p>
 
 <p align="center"><sub>会話とファイルの変更を並べて表示。</sub></p>
@@ -37,21 +37,21 @@ Vagus はプロジェクトと Agent との会話をひとつのデスクトッ�
 - **繰り返す作業を予約。** ローカルの定期タスクを作成し、利用可能な Agent、モデル、モードを選べます。
 
 <p align="center">
-  <img src="assets/screenshots/vagus-agent-picker-showcase.png" alt="Vagus で新しい会話の Agent を選択" width="1000" />
+  <img src="assets/screenshots/vagus-agent-picker-detail.svg" alt="Vagus で新しい会話の Agent を選択" width="1000" />
 </p>
 
 <p align="center"><sub>新しい会話を始めるときに Agent を選択。</sub></p>
 
 ### 対応エージェント
 
-| エージェント | 連携方式 | 備考 |
-| --- | --- | --- |
-| Pi | Pi RPC | Pi 拡張機能との連携とネイティブ会話のインポートに対応します。 |
-| Claude Code | ACP bridge | CLI、ログイン、ユーザー設定はローカルの Claude Code が管理します。 |
-| Codex | Codex app-server | ローカルの Codex CLI を使用します。app-server は実験的なインターフェースです。 |
-| OpenCode | ACP | ローカルの OpenCode CLI が公開するセッション機能を使用します。 |
-| Qoder CLI | ACP | ローカルの Qoder CLI が公開する機能を使用します。 |
-| ZCode | ACP bridge | コミュニティ運営の `zcode-acp-server` を使用します。Z.ai 公式の ACP 連携ではありません。 |
+| エージェント | 連携方式         | 備考                                                                                     |
+| ------------ | ---------------- | ---------------------------------------------------------------------------------------- |
+| Pi           | Pi RPC           | Pi 拡張機能との連携とネイティブ会話のインポートに対応します。                            |
+| Claude Code  | ACP bridge       | CLI、ログイン、ユーザー設定はローカルの Claude Code が管理します。                       |
+| Codex        | Codex app-server | ローカルの Codex CLI を使用します。app-server は実験的なインターフェースです。           |
+| OpenCode     | ACP              | ローカルの OpenCode CLI が公開するセッション機能を使用します。                           |
+| Qoder CLI    | ACP              | ローカルの Qoder CLI が公開する機能を使用します。                                        |
+| ZCode        | ACP bridge       | コミュニティ運営の `zcode-acp-server` を使用します。Z.ai 公式の ACP 連携ではありません。 |
 
 各エージェントのインストール、アカウント、モデル設定は公式ツールで行います。 Vagus はユーザーに代わってログインせず、連携プロトコルで公開されていない機能を保証しません。
 

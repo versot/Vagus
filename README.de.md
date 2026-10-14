@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/vagus-turn-changes-showcase.png" alt="Agent-Änderungen und Unterschiede in Vagus überprüfen" width="1000" />
+  <img src="assets/screenshots/vagus-turn-changes.png" alt="Agent-Änderungen und Unterschiede in Vagus überprüfen" width="1000" />
 </p>
 
 <p align="center"><sub>Unterhaltung und Dateiänderungen nebeneinander.</sub></p>
@@ -37,21 +37,21 @@ Vagus bringt Projekte und Agent-Unterhaltungen in einem Desktop-Arbeitsbereich z
 - **Wiederkehrende Aufgaben planen.** Lokale Zeitpläne erstellen und je Aufgabe einen verfügbaren Agent, ein Modell und einen Modus wählen.
 
 <p align="center">
-  <img src="assets/screenshots/vagus-agent-picker-showcase.png" alt="Agent für eine neue Unterhaltung in Vagus auswählen" width="1000" />
+  <img src="assets/screenshots/vagus-agent-picker-detail.svg" alt="Agent für eine neue Unterhaltung in Vagus auswählen" width="1000" />
 </p>
 
 <p align="center"><sub>Beim Start einer Unterhaltung einen Agent auswählen.</sub></p>
 
 ### Integrierte Agenten
 
-| Agent | Integration | Hinweise |
-| --- | --- | --- |
-| Pi | Pi RPC | Unterstützt Pi-Erweiterungen und den nativen Import von Gesprächen. |
-| Claude Code | ACP-Bridge | Die lokale Claude-Code-CLI verwaltet Installation, Anmeldung und Benutzereinstellungen. |
-| Codex | Codex app-server | Verwendet die lokale Codex-CLI; app-server ist weiterhin eine experimentelle Schnittstelle. |
-| OpenCode | ACP | Nutzt Sitzungsfunktionen, die von der lokalen OpenCode-CLI bereitgestellt werden. |
-| Qoder CLI | ACP | Nutzt Funktionen, die von der lokalen Qoder-CLI bereitgestellt werden. |
-| ZCode | ACP-Bridge | Verbindung über den Community-Server `zcode-acp-server`; keine offizielle Z.ai-ACP-Integration. |
+| Agent       | Integration      | Hinweise                                                                                        |
+| ----------- | ---------------- | ----------------------------------------------------------------------------------------------- |
+| Pi          | Pi RPC           | Unterstützt Pi-Erweiterungen und den nativen Import von Gesprächen.                             |
+| Claude Code | ACP-Bridge       | Die lokale Claude-Code-CLI verwaltet Installation, Anmeldung und Benutzereinstellungen.         |
+| Codex       | Codex app-server | Verwendet die lokale Codex-CLI; app-server ist weiterhin eine experimentelle Schnittstelle.     |
+| OpenCode    | ACP              | Nutzt Sitzungsfunktionen, die von der lokalen OpenCode-CLI bereitgestellt werden.               |
+| Qoder CLI   | ACP              | Nutzt Funktionen, die von der lokalen Qoder-CLI bereitgestellt werden.                          |
+| ZCode       | ACP-Bridge       | Verbindung über den Community-Server `zcode-acp-server`; keine offizielle Z.ai-ACP-Integration. |
 
 Die offiziellen Tools der Agenten verwalten Installation, Konto und Modellkonfiguration. Vagus meldet Sie nicht stellvertretend an und garantiert keine Funktionen, die ein Agent nicht über sein Integrationsprotokoll bereitstellt.
 

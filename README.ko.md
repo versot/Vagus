@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/vagus-turn-changes-showcase.png" alt="Vagus에서 에이전트 변경 사항과 diff 검토" width="1000" />
+  <img src="assets/screenshots/vagus-turn-changes.png" alt="Vagus에서 에이전트 변경 사항과 diff 검토" width="1000" />
 </p>
 
 <p align="center"><sub>대화와 파일 변경 사항을 나란히 확인하세요.</sub></p>
@@ -37,21 +37,21 @@ Vagus는 프로젝트와 Agent 대화를 하나의 데스크톱 작업 공간에
 - **반복 작업 예약.** 로컬 예약 작업을 만들고 각 작업에 사용 가능한 Agent, 모델, 모드를 선택합니다.
 
 <p align="center">
-  <img src="assets/screenshots/vagus-agent-picker-showcase.png" alt="Vagus에서 새 대화에 사용할 에이전트 선택" width="1000" />
+  <img src="assets/screenshots/vagus-agent-picker-detail.svg" alt="Vagus에서 새 대화에 사용할 에이전트 선택" width="1000" />
 </p>
 
 <p align="center"><sub>새 대화를 시작할 때 Agent를 선택하세요.</sub></p>
 
 ### 통합된 Agent
 
-| Agent | 통합 방식 | 설명 |
-| --- | --- | --- |
-| Pi | Pi RPC | Pi 확장 기능과 네이티브 대화 가져오기를 지원합니다. |
-| Claude Code | ACP bridge | 로컬 Claude Code CLI가 설치, 로그인, 사용자 설정을 관리합니다. |
-| Codex | Codex app-server | 로컬 Codex CLI를 사용하며 app-server는 실험적 인터페이스입니다. |
-| OpenCode | ACP | 로컬 OpenCode CLI가 제공하는 세션 기능을 사용합니다. |
-| Qoder CLI | ACP | 로컬 Qoder CLI가 제공하는 기능을 사용합니다. |
-| ZCode | ACP bridge | 커뮤니티가 관리하는 `zcode-acp-server`를 사용하며 Z.ai 공식 ACP 통합은 아닙니다. |
+| Agent       | 통합 방식        | 설명                                                                             |
+| ----------- | ---------------- | -------------------------------------------------------------------------------- |
+| Pi          | Pi RPC           | Pi 확장 기능과 네이티브 대화 가져오기를 지원합니다.                              |
+| Claude Code | ACP bridge       | 로컬 Claude Code CLI가 설치, 로그인, 사용자 설정을 관리합니다.                   |
+| Codex       | Codex app-server | 로컬 Codex CLI를 사용하며 app-server는 실험적 인터페이스입니다.                  |
+| OpenCode    | ACP              | 로컬 OpenCode CLI가 제공하는 세션 기능을 사용합니다.                             |
+| Qoder CLI   | ACP              | 로컬 Qoder CLI가 제공하는 기능을 사용합니다.                                     |
+| ZCode       | ACP bridge       | 커뮤니티가 관리하는 `zcode-acp-server`를 사용하며 Z.ai 공식 ACP 통합은 아닙니다. |
 
 각 Agent의 공식 도구가 설치, 계정, 모델 설정을 관리합니다.
 

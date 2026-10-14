@@ -35,7 +35,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/vagus-turn-changes-showcase.png" alt="在 Vagus 中查看 Agent 的对话和文件差异" width="1000" />
+  <img src="assets/screenshots/vagus-turn-changes.png" alt="在 Vagus 中查看 Agent 的对话和文件差异" width="1000" />
 </p>
 
 <p align="center"><sub>对话和本轮文件改动并排呈现。</sub></p>
@@ -54,21 +54,21 @@ Vagus 把项目和 Agent 会话集中在一个桌面工作区。你可以选择 
 - **让重复任务按时运行。** 创建本地定时任务，为每项任务选择可用的 Agent、模型和模式。
 
 <p align="center">
-  <img src="assets/screenshots/vagus-agent-picker-showcase.png" alt="在 Vagus 新建会话时选择 Agent" width="1000" />
+  <img src="assets/screenshots/vagus-agent-picker-detail.svg" alt="在 Vagus 新建会话时选择 Agent" width="1000" />
 </p>
 
 <p align="center"><sub>新建会话时选择适合当前任务的 Agent。</sub></p>
 
 ### 已接入的 Agent
 
-| Agent | 接入方式 | 说明 |
-| --- | --- | --- |
-| Pi | Pi RPC | 保留 Pi 扩展交互及原生会话导入能力。 |
-| Claude Code | ACP bridge | CLI、登录和用户配置由本机 Claude Code 管理。 |
-| Codex | Codex app-server | 使用本机 Codex CLI；app-server 仍属实验性接口。 |
-| OpenCode | ACP | 使用本机 OpenCode CLI 公布的会话能力。 |
-| Qoder CLI | ACP | 使用本机 Qoder CLI 公布的会话能力。 |
-| ZCode | ACP bridge | 通过社区维护的 `zcode-acp-server` 连接；不是 Z.ai 官方 ACP 接入。 |
+| Agent       | 接入方式         | 说明                                                              |
+| ----------- | ---------------- | ----------------------------------------------------------------- |
+| Pi          | Pi RPC           | 保留 Pi 扩展交互及原生会话导入能力。                              |
+| Claude Code | ACP bridge       | CLI、登录和用户配置由本机 Claude Code 管理。                      |
+| Codex       | Codex app-server | 使用本机 Codex CLI；app-server 仍属实验性接口。                   |
+| OpenCode    | ACP              | 使用本机 OpenCode CLI 公布的会话能力。                            |
+| Qoder CLI   | ACP              | 使用本机 Qoder CLI 公布的会话能力。                               |
+| ZCode       | ACP bridge       | 通过社区维护的 `zcode-acp-server` 连接；不是 Z.ai 官方 ACP 接入。 |
 
 Agent 的安装、账号和模型配置由各自的官方工具管理。 Vagus 不代替这些工具登录，也不保证 Agent 未通过接入协议公开的功能。
 

@@ -35,7 +35,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/vagus-turn-changes-showcase.png" alt="Reviewing agent changes and diffs in Vagus" width="1000" />
+  <img src="assets/screenshots/vagus-turn-changes.png" alt="Reviewing agent changes and diffs in Vagus" width="1000" />
 </p>
 
 <p align="center"><sub>A conversation and its file changes, side by side.</sub></p>
@@ -54,7 +54,7 @@ Vagus gives your projects and agent conversations a shared desktop home. Choose 
 - **Put repeat work on a schedule.** Create local scheduled tasks and choose the available agent, model, and mode for each one.
 
 <p align="center">
-  <img src="assets/screenshots/vagus-agent-picker-showcase.png" alt="Selecting an agent for a new conversation in Vagus" width="1000" />
+  <img src="assets/screenshots/vagus-agent-picker-detail.svg" alt="Selecting an agent for a new conversation in Vagus" width="1000" />
 </p>
 
 <p align="center"><sub>Choose an agent when starting a conversation.</sub></p>

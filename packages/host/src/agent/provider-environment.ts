@@ -87,15 +87,17 @@ export async function providerSearchPath(environment: NodeJS.ProcessEnv = proces
 }
 
 /** Desktop bridge credentials belong to the Host, never to provider/package workers. */
-export function providerEnvironment(): NodeJS.ProcessEnv {
-  const environment = { ...process.env };
+export function providerEnvironment(source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+  const environment = { ...source };
   delete environment.VAGUS_HOST_TOKEN;
   delete environment.VAGUS_ALLOWED_ORIGINS;
   return environment;
 }
 
-export async function providerEnvironmentWithSearchPath(): Promise<NodeJS.ProcessEnv> {
-  const environment = providerEnvironment();
+export async function providerEnvironmentWithSearchPath(
+  source: NodeJS.ProcessEnv = process.env,
+): Promise<NodeJS.ProcessEnv> {
+  const environment = providerEnvironment(source);
   const path = await providerSearchPath(environment);
   if (path) environment.PATH = path;
   return environment;
