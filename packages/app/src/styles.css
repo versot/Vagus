@@ -3850,9 +3850,27 @@ kbd {
 .message-content a:hover {
   color: white;
 }
-.markdown-local-image { display: inline; padding: 0; border: 0; color: var(--blue-bright); background: transparent; font: inherit; text-align: left; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--blue-bright) 55%, transparent); text-underline-offset: 3px; cursor: pointer; }
-.markdown-local-image:hover { color: var(--blue); text-decoration-color: currentColor; }
-.markdown-local-image:focus-visible { outline: 2px solid var(--blue-bright); outline-offset: 2px; }
+.markdown-local-image {
+  display: inline;
+  padding: 0;
+  border: 0;
+  color: var(--blue-bright);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--blue-bright) 55%, transparent);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.markdown-local-image:hover {
+  color: var(--blue);
+  text-decoration-color: currentColor;
+}
+.markdown-local-image:focus-visible {
+  outline: 2px solid var(--blue-bright);
+  outline-offset: 2px;
+}
 .message-content :not(pre) > code {
   padding: 2px 5px;
   border: 1px solid rgba(var(--tone-ffffff-rgb), 0.065);

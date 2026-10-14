@@ -8,7 +8,7 @@ let loginPath: Promise<string | null> | undefined;
 
 function macOSLoginPath(environment: NodeJS.ProcessEnv): Promise<string | null> {
   if (loginPath) return loginPath;
-  loginPath = (async () => {
+  const pending = (async () => {
     const shell = environment.SHELL || "/bin/zsh";
     try {
       const { stdout } = await execFileAsync(shell, ["-lic", "printf '\\n__VAGUS_PATH__%s\\n' \"$PATH\""], {
@@ -24,7 +24,13 @@ function macOSLoginPath(environment: NodeJS.ProcessEnv): Promise<string | null> 
       return null;
     }
   })();
-  return loginPath;
+  loginPath = pending;
+  // Share concurrent startup lookups, but let later refreshes observe CLI
+  // installers that update the user's login-shell configuration.
+  void pending.then(() => {
+    if (loginPath === pending) loginPath = undefined;
+  });
+  return pending;
 }
 
 function commonExecutableDirectories(environment: NodeJS.ProcessEnv): string[] {

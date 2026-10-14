@@ -30,6 +30,10 @@ registerWorkspaceTab({
     const path = typeof source === "string" ? markdownImageFilePath(source) : null;
     if (!path) throw new Error("Invalid local image path");
     const baseDirectory = (input as { baseDirectory?: unknown }).baseDirectory;
-    return { path, name: path.split(/[\\/]/).filter(Boolean).pop() ?? path, baseDirectory: typeof baseDirectory === "string" ? baseDirectory : null };
+    return {
+      path,
+      name: path.split(/[\\/]/).filter(Boolean).pop() ?? path,
+      baseDirectory: typeof baseDirectory === "string" ? baseDirectory : null,
+    };
   },
 });

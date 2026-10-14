@@ -1,10 +1,50 @@
-import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { join } from "node:path";
+import { execFile, spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { constants } from "node:fs";
+import { access, readFile, realpath } from "node:fs/promises";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
 import { StringDecoder } from "node:string_decoder";
+import { promisify } from "node:util";
 import { providerEnvironmentWithSearchPath } from "../../provider-environment.js";
 import { resolveProviderExecutable } from "../../provider-executable.js";
 import { type PendingRpc, type RpcId } from "./types.js";
 import { isRecord, safeError } from "./utils.js";
+
+const execFileAsync = promisify(execFile);
+
+async function arm64CodexBinary(executable: string, environment: NodeJS.ProcessEnv): Promise<string | undefined> {
+  if (process.platform !== "darwin" || process.arch !== "x64" || environment.VAGUS_CODEX_EXECUTABLE?.trim())
+    return undefined;
+
+  try {
+    const { stdout } = await execFileAsync("/usr/sbin/sysctl", ["-n", "hw.optional.arm64"], {
+      timeout: 1_000,
+      maxBuffer: 4_096,
+    });
+    if (stdout.trim() !== "1") return undefined;
+
+    const entry = await realpath(executable);
+    if (!(await readFile(entry, "utf8")).startsWith("#!/usr/bin/env node")) return undefined;
+    const packageRoot = dirname(dirname(entry));
+    const rootPackage = JSON.parse(await readFile(join(packageRoot, "package.json"), "utf8")) as {
+      name?: unknown;
+      version?: unknown;
+    };
+    if (rootPackage.name !== "@openai/codex" || typeof rootPackage.version !== "string") return undefined;
+
+    const require = createRequire(entry);
+    const arm64PackagePath = require.resolve("@openai/codex-darwin-arm64/package.json");
+    const arm64Package = JSON.parse(await readFile(arm64PackagePath, "utf8")) as { version?: unknown };
+    if (arm64Package.version !== `${rootPackage.version}-darwin-arm64`) return undefined;
+
+    const binary = join(dirname(arm64PackagePath), "vendor", "aarch64-apple-darwin", "bin", "codex");
+    await access(binary, constants.X_OK);
+    return binary;
+  } catch {
+    // Keep the configured CLI path when native ARM64 Codex is not installed.
+    return undefined;
+  }
+}
 
 export async function resolveCodexExecutable(environment: NodeJS.ProcessEnv = process.env): Promise<string> {
   return (await resolveCodexExecutableDetails(environment)).path;
@@ -22,13 +62,15 @@ export async function resolveCodexExecutableDetails(environment: NodeJS.ProcessE
       /* optional versioned desktop install */
     }
   }
-  return resolveProviderExecutable({
+  const resolved = await resolveProviderExecutable({
     displayName: "Codex CLI",
     commandNames: process.platform === "win32" ? ["codex.exe", "codex"] : ["codex"],
     environmentVariables: ["VAGUS_CODEX_EXECUTABLE"],
     candidatePaths,
     environment,
   });
+  const nativeArm64 = await arm64CodexBinary(resolved.path, environment);
+  return nativeArm64 ? { path: nativeArm64, source: `${resolved.source}; native ARM64 Codex package` } : resolved;
 }
 
 export function codexAppServerArgs(platform = process.platform): string[] {
